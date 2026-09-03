@@ -1,0 +1,25 @@
+{
+  "schema": "dovod-reference-metrics-v1",
+  "version": "0.1.0",
+  "constraints": {
+    "candidate_relations": 272,
+    "meccano_refuted_relations": 201,
+    "impact_refuted_relations": 259,
+    "nested_fit9_recall": 0.8707347636024105,
+    "nested_calibrated_recall": 0.8852784470431527,
+    "meccano_refutations_surviving_one_carrier_loss": 162,
+    "impact_refutations_surviving_one_carrier_loss": 184
+  },
+  "information_selection": {
+    "mixed_uncertainty_episodes": 187,
+    "semantic_cost_1_bellman": 1.6657369124929755,
+    "semantic_cost_1_myopic": 1.7379768613666886,
+    "noisy_source_primary_scenario": {
+      "r_physical": 0.55,
+      "r_semantic": 0.85,
+      "source_change_rate": 0.3315508021390374,
+      "post_variance_delta": -0.00183
+    }
+  },
+  "claim_boundary": "Benchmark-specific methodological evidence; not mechanical truth, safety certification, or measured human benefit."
+}
