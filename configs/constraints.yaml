@@ -1,0 +1,8 @@
+experiment_family: constraint_validation
+n_components: 17
+candidate_relation_class: unary_unconditional_same_state
+candidate_relations: 272
+support_threshold: 1.0
+split: train
+bootstrap_seed: 20260901
+bootstrap_resamples: 20000
