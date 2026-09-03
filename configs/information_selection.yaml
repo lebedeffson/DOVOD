@@ -1,0 +1,9 @@
+experiment_family: information_source_selection
+physical_query_cost: 1.0
+semantic_review_costs: [1.0, 2.0, 5.0, 10.0]
+semantic_graph_prior: uniform
+physical_state_prior: train_derived_independent_bernoulli
+reliability_scenarios:
+  - {physical: 0.55, semantic: 0.85}
+  - {physical: 0.85, semantic: 0.55}
+recording_bootstrap_resamples: 5000
