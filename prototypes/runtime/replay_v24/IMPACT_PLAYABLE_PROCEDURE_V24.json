@@ -1,0 +1,33 @@
+{
+  "schema": "dovod-procedure-v2",
+  "procedure_id": "impact_grounded_gearbox_slice_v24",
+  "description": "Playable multi-route gearbox reassembly slice using real IMPACT semantic actions. Hard constraints encode local state/tool consistency in this prototype, not authoritative physical prerequisite truth.",
+  "facts": ["adapter_mounted","drive_shaft_inserted","bevel_gear_inserted","bearing_plate_seated","screw_inserted","screw_tightened","lever_attached","m4_nut_threaded","m4_nut_tightened","torx_tool_held","wrench_tool_held","shaft_check_done"],
+  "initial": [],
+  "actions": [
+    {"id":"mount_adapter_plate","label":"Mount adapter plate","kind":"mount","canonical_order":0,"role":"progress","precondition_any_of":[{"all":[],"none":["adapter_mounted"]}],"add":["adapter_mounted"],"remove":[]},
+    {"id":"dismount_adapter_plate","label":"Dismount adapter plate","kind":"recovery","canonical_order":1,"role":"rework","precondition_any_of":[{"all":["adapter_mounted"],"none":[]}],"add":[],"remove":["adapter_mounted"]},
+    {"id":"insert_drive_shaft","label":"Insert drive shaft","kind":"insert","canonical_order":2,"role":"progress","precondition_any_of":[{"all":[],"none":["drive_shaft_inserted"]}],"add":["drive_shaft_inserted"],"remove":[]},
+    {"id":"extract_drive_shaft","label":"Extract drive shaft","kind":"recovery","canonical_order":3,"role":"rework","precondition_any_of":[{"all":["drive_shaft_inserted"],"none":[]}],"add":[],"remove":["drive_shaft_inserted","shaft_check_done"]},
+    {"id":"insert_bevel_gear","label":"Insert bevel gear","kind":"insert","canonical_order":4,"role":"progress","precondition_any_of":[{"all":[],"none":["bevel_gear_inserted"]}],"add":["bevel_gear_inserted"],"remove":[]},
+    {"id":"extract_bevel_gear","label":"Extract bevel gear","kind":"recovery","canonical_order":5,"role":"rework","precondition_any_of":[{"all":["bevel_gear_inserted"],"none":[]}],"add":[],"remove":["bevel_gear_inserted","shaft_check_done"]},
+    {"id":"seat_bearing_plate","label":"Seat bearing plate","kind":"seat","canonical_order":6,"role":"progress","precondition_any_of":[{"all":[],"none":["bearing_plate_seated"]}],"add":["bearing_plate_seated"],"remove":[]},
+    {"id":"extract_bearing_plate","label":"Extract bearing plate","kind":"recovery","canonical_order":7,"role":"rework","precondition_any_of":[{"all":["bearing_plate_seated"],"none":[]}],"add":[],"remove":["bearing_plate_seated"]},
+    {"id":"insert_screw","label":"Insert screw","kind":"insert","canonical_order":8,"role":"progress","precondition_any_of":[{"all":[],"none":["screw_inserted"]}],"add":["screw_inserted"],"remove":[]},
+    {"id":"remove_screw","label":"Remove screw","kind":"recovery","canonical_order":9,"role":"rework","precondition_any_of":[{"all":["screw_inserted"],"none":[]}],"add":[],"remove":["screw_inserted","screw_tightened"]},
+    {"id":"pick_up_torx_screwdriver","label":"Pick up Torx screwdriver","kind":"tool","canonical_order":10,"role":"progress","precondition_any_of":[{"all":[],"none":["torx_tool_held"]}],"add":["torx_tool_held"],"remove":[]},
+    {"id":"store_torx_screwdriver","label":"Store Torx screwdriver","kind":"tool","canonical_order":11,"role":"neutral","precondition_any_of":[{"all":["torx_tool_held"],"none":[]}],"add":[],"remove":["torx_tool_held"]},
+    {"id":"tighten_screw","label":"Tighten screw","kind":"tool_apply","canonical_order":12,"role":"progress","precondition_any_of":[{"all":["screw_inserted","torx_tool_held"],"none":["screw_tightened"]}],"add":["screw_tightened"],"remove":[]},
+    {"id":"loosen_screw","label":"Loosen screw","kind":"recovery","canonical_order":13,"role":"rework","precondition_any_of":[{"all":["screw_tightened","torx_tool_held"],"none":[]}],"add":[],"remove":["screw_tightened"]},
+    {"id":"attach_lever","label":"Attach lever","kind":"attach","canonical_order":14,"role":"progress","precondition_any_of":[{"all":[],"none":["lever_attached"]}],"add":["lever_attached"],"remove":[]},
+    {"id":"detach_lever","label":"Detach lever","kind":"recovery","canonical_order":15,"role":"rework","precondition_any_of":[{"all":["lever_attached"],"none":[]}],"add":[],"remove":["lever_attached"]},
+    {"id":"thread_M4_nut","label":"Thread M4 nut","kind":"thread","canonical_order":16,"role":"progress","precondition_any_of":[{"all":[],"none":["m4_nut_threaded"]}],"add":["m4_nut_threaded"],"remove":[]},
+    {"id":"remove_M4_nut","label":"Remove M4 nut","kind":"recovery","canonical_order":17,"role":"rework","precondition_any_of":[{"all":["m4_nut_threaded"],"none":[]}],"add":[],"remove":["m4_nut_threaded","m4_nut_tightened"]},
+    {"id":"pick_up_combination_wrench","label":"Pick up combination wrench","kind":"tool","canonical_order":18,"role":"progress","precondition_any_of":[{"all":[],"none":["wrench_tool_held"]}],"add":["wrench_tool_held"],"remove":[]},
+    {"id":"store_combination_wrench","label":"Store combination wrench","kind":"tool","canonical_order":19,"role":"neutral","precondition_any_of":[{"all":["wrench_tool_held"],"none":[]}],"add":[],"remove":["wrench_tool_held"]},
+    {"id":"tighten_M4_nut","label":"Tighten M4 nut","kind":"tool_apply","canonical_order":20,"role":"progress","precondition_any_of":[{"all":["m4_nut_threaded","wrench_tool_held"],"none":["m4_nut_tightened"]}],"add":["m4_nut_tightened"],"remove":[]},
+    {"id":"loosen_M4_nut","label":"Loosen M4 nut","kind":"recovery","canonical_order":21,"role":"rework","precondition_any_of":[{"all":["m4_nut_tightened","wrench_tool_held"],"none":[]}],"add":[],"remove":["m4_nut_tightened"]},
+    {"id":"hand_spin_drive_shaft","label":"Hand-spin drive shaft functional check","kind":"inspect","canonical_order":22,"role":"progress","precondition_any_of":[{"all":["drive_shaft_inserted","bevel_gear_inserted"],"none":["shaft_check_done"]}],"add":["shaft_check_done"],"remove":[]}
+  ],
+  "goal": {"all":["adapter_mounted","drive_shaft_inserted","bevel_gear_inserted","bearing_plate_seated","screw_tightened","lever_attached","m4_nut_tightened","shaft_check_done"],"none":["torx_tool_held","wrench_tool_held"]}
+}
