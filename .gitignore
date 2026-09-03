@@ -1,0 +1,26 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+.idea/
+.vscode/
+
+# Third-party/raw datasets are local only.
+data/external/*
+!data/external/.gitkeep
+data/raw/
+
+# Local/generated large artifacts.
+results/generated/
+figures/generated/
+*.log
+
+# Never commit publication/editorial files here.
+*.docx
+*.pdf
+*.dotm
+*.pptx
