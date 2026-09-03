@@ -1,0 +1,20 @@
+{
+  "schema": "dovod-progressive-semantic-risk-catalog-v1",
+  "status": "DEPLOYMENT_ARTIFACT_NOT_HELD_OUT_EVIDENCE",
+  "globalRisk": 0.0818105616093881,
+  "thresholds": {
+    "action": {"assist10": 0.15384615384615385, "watch20": 0.08561643835616438, "threshold30": 0.06976744186046512},
+    "verb": {"assist10": 0.12987012987012986, "watch20": 0.08501118568232663, "threshold30": 0.057803468208092484, "prearm10": 0.12987012987012986, "prearm20": 0.08501118568232663},
+    "noun": {"assist10": 0.1553784860557769, "watch20": 0.12195121951219512, "threshold30": 0.07463884430176565}
+  },
+  "actions": [
+    {"id":15,"risk":0.16,"events":46,"anomalies":7},{"id":17,"risk":0.028985507246376812,"events":134,"anomalies":3},{"id":35,"risk":0.22388059701492538,"events":63,"anomalies":14},{"id":37,"risk":0.1232876712328767,"events":69,"anomalies":8},{"id":38,"risk":0.0375,"events":76,"anomalies":2},{"id":39,"risk":0.08561643835616438,"events":288,"anomalies":24},{"id":41,"risk":0.06896551724137931,"events":83,"anomalies":5},{"id":42,"risk":0.12987012987012986,"events":73,"anomalies":9},{"id":44,"risk":0.42857142857142855,"events":10,"anomalies":5},{"id":46,"risk":0.45454545454545453,"events":7,"anomalies":4},{"id":47,"risk":0.2,"events":1,"anomalies":0},{"id":48,"risk":0.25,"events":8,"anomalies":2},{"id":50,"risk":0.4375,"events":12,"anomalies":6},{"id":52,"risk":0.047058823529411764,"events":166,"anomalies":7},{"id":55,"risk":0.07894736842105263,"events":34,"anomalies":2},{"id":59,"risk":0.059602649006622516,"events":298,"anomalies":17},{"id":63,"risk":0.5714285714285714,"events":3,"anomalies":3},{"id":66,"risk":0.14285714285714285,"events":3,"anomalies":0},{"id":68,"risk":0.35714285714285715,"events":10,"anomalies":4},{"id":70,"risk":0.5555555555555556,"events":5,"anomalies":4},{"id":129,"risk":0.05263157894736842,"events":34,"anomalies":1},{"id":131,"risk":0.03389830508474576,"events":55,"anomalies":1},{"id":137,"risk":0.9090909090909091,"events":51,"anomalies":49}
+  ],
+  "verbs": [
+    {"id":2,"risk":0.0392156862745098,"events":200,"anomalies":7},{"id":3,"risk":0.4375,"events":12,"anomalies":6},{"id":4,"risk":0.4666666666666667,"events":11,"anomalies":6},{"id":5,"risk":0.35,"events":16,"anomalies":6},{"id":7,"risk":0.9090909090909091,"events":51,"anomalies":49},{"id":11,"risk":0.08501118568232663,"events":443,"anomalies":37},{"id":12,"risk":0.4,"events":6,"anomalies":3},{"id":13,"risk":0.17525773195876287,"events":93,"anomalies":16},{"id":14,"risk":0.045714285714285714,"events":1221,"anomalies":55},{"id":16,"risk":0.3448275862068966,"events":25,"anomalies":9},{"id":17,"risk":0.12987012987012986,"events":73,"anomalies":9},{"id":18,"risk":0.027586206896551724,"events":141,"anomalies":3},{"id":19,"risk":0.041884816753926704,"events":187,"anomalies":7},{"id":20,"risk":0.057803468208092484,"events":342,"anomalies":19}
+  ],
+  "nouns": [
+    {"id":1,"risk":0.145,"events":196,"anomalies":28},{"id":3,"risk":0.12195121951219512,"events":283,"anomalies":34},{"id":4,"risk":0.09433962264150944,"events":155,"anomalies":14},{"id":5,"risk":0.15,"events":96,"anomalies":14},{"id":6,"risk":0.1834625322997416,"events":383,"anomalies":70},{"id":10,"risk":0.0728476821192053,"events":449,"anomalies":32},{"id":11,"risk":0.06379585326953748,"events":623,"anomalies":39},{"id":13,"risk":0.07463884430176565,"events":1242,"anomalies":92},{"id":17,"risk":0.1553784860557769,"events":247,"anomalies":38}
+  ],
+  "source": "Compact runtime subset of the frozen IMPACT progressive semantic risk catalogue."
+}
