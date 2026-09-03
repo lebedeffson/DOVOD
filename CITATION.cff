@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the software artifact."
+title: "DOVOD: Decision-Oriented Verification of Observations and Dependencies"
+type: software
+version: 0.1.0
+date-released: 2026-09-03
+authors:
+  - family-names: Lebedev
+    given-names: Alexander D.
+  - family-names: Lebedev
+    given-names: Mikhail D.
+  - family-names: Trofimov
+    given-names: Yuri V.
+  - family-names: Averkin
+    given-names: Alexey N.
