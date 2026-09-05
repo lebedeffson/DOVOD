@@ -1,0 +1,67 @@
+name: Q1 Paper A AMLGym confirmatory matrix
+on:
+  workflow_dispatch:
+  push:
+    branches: ['q1/paper-a-amlgym-20260905']
+    paths:
+      - 'research/q1_2026/**'
+      - '.github/workflows/q1-paper-a.yml'
+
+jobs:
+  amlgym:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: [barman, blocksworld, childsnack, depots, elevators, ferry, floortile, goldminer, grippers, matchingbw, miconic, nomystery, npuzzle, parking, rovers, satellite, sokoban, spanner, tpp, transport]
+        trace_budget: [3, 10]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Install frozen environment
+        run: |
+          python -m pip install -r research/q1_2026/requirements.txt
+          python -m pip install -r research/q1_2026/requirements-amlgym.txt
+          python - <<'PY'
+          import importlib.metadata
+          v=importlib.metadata.version('amlgym')
+          assert v=='1.0.11', v
+          print('AMLGym',v)
+          PY
+      - name: Run domain/budget shard
+        working-directory: research/q1_2026
+        run: |
+          python benchmarks/run_amlgym_matrix.py --domains '${{ matrix.domain }}' --trace-budgets '${{ matrix.trace_budget }}' --output-dir artifacts/amlgym --summary results/shard.json
+      - name: Upload cells
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amlgym-${{ matrix.domain }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/amlgym/*.json
+          if-no-files-found: warn
+
+  merge:
+    needs: amlgym
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python -m pip install -r research/q1_2026/requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: amlgym-*
+          path: research/q1_2026/artifacts/amlgym_download
+          merge-multiple: true
+      - name: Merge matrix
+        working-directory: research/q1_2026
+        run: python benchmarks/merge_amlgym_results.py --input-dir artifacts/amlgym_download --output results/paper_a_amlgym_matrix.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-a-amlgym-matrix
+          path: research/q1_2026/results/paper_a_amlgym_matrix.json
+          if-no-files-found: warn
