@@ -10,6 +10,7 @@ OUT=ROOT/'results'/'paper_b_orientation_planning.json'
 def oriented_case(r,c=0.01):
     models=((0,),); worlds=cartesian_worlds(state_bits=1,models=models,physical_reliabilities=(r,),semantic_reliabilities=(0.8,),physical_orientations=(-1,1)); belief=(1/len(worlds),)*len(worlds); queries=(Query('calibrate-physical','calibrate_physical',0,c),Query('direct-state','state',0,c)); return worlds,belief,models,queries
 def main():
+    OUT.parent.mkdir(parents=True, exist_ok=True)
     closed=[]
     for r in (0.6,0.7,0.8,0.9,0.95):
         w,b,m,q=oriented_case(r); solver=EvidenceCountDP(b,w,m,q,horizon=2,false_allow=1.0,false_block=1.0); exact=solver.solve(); expected=min(0.5,0.02+bayes_error_after_calibration_and_direct(r)); closed.append({'r':r,'exact_value':exact.value,'exact_action':list(exact.action),'closed_form_optimal_value':expected,'abs_error':abs(exact.value-expected),'risk_gain_before_cost':calibration_risk_gain(r)})
