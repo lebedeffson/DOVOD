@@ -1,0 +1,11 @@
+{
+  "schema": "dovod-q1-amlgym-contract-v2",
+  "frozen_on": "2026-09-05",
+  "amlgym": {"package": "amlgym", "version": "1.0.11", "upstream_repo": "LamannaLeonardo/AMLGym"},
+  "domains": ["barman","blocksworld","childsnack","depots","elevators","ferry","floortile","goldminer","grippers","matchingbw","miconic","nomystery","npuzzle","parking","rovers","satellite","sokoban","spanner","tpp","transport"],
+  "learner_families": ["SAM","OffLAM","NOLAM","ROSAME"],
+  "trace_budgets": [3,10],
+  "predictive_sampling": {"problems_per_domain": 2, "states_per_problem": 12, "ground_actions_per_operator_per_state": 4},
+  "dovod_repair": {"max_action_local_features": 8, "max_context_width": 1, "edit_penalty": 0.25},
+  "claim_boundary": "Protocol frozen before external outcomes. Failures/timeouts are retained. DOVOD repairs applicability decisions only."
+}

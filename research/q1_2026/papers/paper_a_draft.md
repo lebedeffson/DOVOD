@@ -1,0 +1,11 @@
+# Paper A draft
+
+## Identifiability and Certified Contextual Repair of Learned Action Models for Decision Support
+
+Action-model learning reconstructs preconditions/effects from traces, but downstream decision support often needs a narrower and more defensible object: which actions should be admitted or blocked in states that matter, and which constraints are actually identified by the evidence. We show that positive successful demonstrations cannot establish necessity of a prerequisite that is never violated in those demonstrations. We then characterize minimum empirical prerequisite models that preserve observed blocking decisions as minimum hitting sets, exposing mandatory, optional-optimal and empirically redundant structure.
+
+A bidirectional contextual repair layer adds two edit types: exceptions locally waive a learned prerequisite to recover false blocks, while guards suppress false allows. The finite edit vocabulary is frozen independently of repair labels. Exact interpolation and weighted soft repair are solved globally by MILP. Contextual exception repair is structurally no more permissive than deleting the same prerequisite set globally. A sparse Bernoulli edit prior yields a PAC-Bayes-kl certificate for a selected deterministic repair mask under explicit IID/bounded-loss/sample-independent-prior assumptions.
+
+In the controlled benchmark the planted model has three edits. The exact solver recovers all three, has zero disagreement on the complete 256-state support, and zero errors on 4096 independent certification draws. The generalization certificate and all exact numbers are stored in `results/paper_a_contextual_benchmark.json`.
+
+The external journal experiment is deliberately separate: AMLGym/IPC must evaluate the decision-repair layer downstream of modern action-model learners with matched information, retained failures and domain-level statistics. Observational procedural counterexamples can falsify strict prerequisites, but positive mechanical necessity requires authoritative SOP/manual/expert labels. The current repair corrects applicability decisions only and does not claim corrected effects or downstream plan solving without separate experiments.
