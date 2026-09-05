@@ -29,6 +29,25 @@ class OperatorRepair:
     fit: SoftRepairResult
 
 
+@dataclass(frozen=True)
+class GlobalDecisionBaseline:
+    """Operator-local non-contextual comparator.
+
+    The comparator is deliberately simple: keep the upstream decision, always
+    allow, or always block.  It is selected on the repair split only.  This is
+    not presented as planning-domain repair; it answers whether DOVOD gains
+    anything beyond a global decision override.
+    """
+
+    operator: str
+    policy: str
+    objective: float
+
+    def __post_init__(self) -> None:
+        if self.policy not in {"identity", "always_allow", "always_block"}:
+            raise ValueError("unknown global baseline policy")
+
+
 def parse_action_label(label: str) -> tuple[str, tuple[str, ...]]:
     text=label.strip()
     if not (text.startswith("(") and text.endswith(")")):
@@ -94,6 +113,58 @@ def fit_operator_repair(operator: str, observations: Sequence[DecisionObservatio
 def predict_operator_repair(model: OperatorRepair, observation: DecisionObservation) -> int:
     return int(repaired_allows(encode_observation(observation,model.feature_names),(0,),model.fit.selected_edits))
 
+
+def fit_global_decision_baseline(
+    operator: str,
+    observations: Sequence[DecisionObservation],
+    *,
+    override_penalty: float = 0.25,
+    false_allow_weight: float = 1.0,
+    false_block_weight: float = 1.0,
+) -> GlobalDecisionBaseline:
+    """Fit a non-contextual operator-level repair baseline.
+
+    Selection uses only the supplied repair observations.  Ties prefer the
+    identity policy, then always-block, to avoid rewarding gratuitous global
+    relaxation.
+    """
+    observations = tuple(observations)
+    if not observations:
+        raise ValueError("observations must be non-empty")
+    if override_penalty < 0:
+        raise ValueError("override_penalty must be non-negative")
+    if false_allow_weight < 0 or false_block_weight < 0:
+        raise ValueError("error weights must be non-negative")
+    if any(parse_action_label(o.action_label)[0] != operator for o in observations):
+        raise ValueError("all observations must belong to operator")
+
+    policies = {
+        "identity": tuple(o.base_allow for o in observations),
+        "always_allow": tuple(1 for _ in observations),
+        "always_block": tuple(0 for _ in observations),
+    }
+    priority = {"identity": 0, "always_block": 1, "always_allow": 2}
+    scored = []
+    for policy, predictions in policies.items():
+        fa = sum(p == 1 and o.truth_allow == 0 for p, o in zip(predictions, observations))
+        fb = sum(p == 0 and o.truth_allow == 1 for p, o in zip(predictions, observations))
+        objective = false_allow_weight * fa + false_block_weight * fb
+        if policy != "identity":
+            objective += float(override_penalty)
+        scored.append((float(objective), priority[policy], policy))
+    objective, _, policy = min(scored)
+    return GlobalDecisionBaseline(operator=operator, policy=policy, objective=objective)
+
+
+def predict_global_decision_baseline(model: GlobalDecisionBaseline, observation: DecisionObservation) -> int:
+    operator, _ = parse_action_label(observation.action_label)
+    if operator != model.operator:
+        raise ValueError("observation belongs to a different operator")
+    if model.policy == "identity":
+        return int(observation.base_allow)
+    if model.policy == "always_allow":
+        return 1
+    return 0
 
 def decision_metrics(observations: Sequence[DecisionObservation], predictions: Sequence[int]) -> dict[str,float|int]:
     observations=tuple(observations); predictions=tuple(map(int,predictions))

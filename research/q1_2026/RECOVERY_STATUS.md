@@ -1,19 +1,33 @@
-# DOVOD Q1 release status — 2026-09-05
+# DOVOD Paper A research status — 2026-09-05
 
-Two separate works now have executable theory, algorithms, tests, benchmark artifacts and manuscript drafts.
+## Active paper
 
-## Reproducible now
+The first Tver DOVOD thesis, **"Отличение обязательных условий от привычного порядка действий в технологических процедурах"**, is now the active journal-scale research line.
 
-Paper A: prerequisite identifiability witness; version spaces; exact decision-equivalent hitting set; exact and soft bidirectional contextual repair; structural comparison with global deletion; PAC-Bayes-kl certificate mechanics; controlled contextual benchmark; AMLGym applicability bridge.
+The short thesis provides real procedural falsification evidence. The research expansion adds the formal decision object, exact repair algorithms, statistical certification and an external action-model-learning benchmark protocol.
 
-Paper B: source-orientation non-identifiability; calibration theorem; persistent-reliability correlation; integrated orientation/reliability hidden worlds; numerical belief DP; independent ordered-history oracle; exact evidence-count DP; exact state-count formula `C(h+2Q,h)`; POMCP-style approximate baseline.
+## Locally closed
 
-Fresh local verification: 38 tests pass. Three H3 cases match history oracle value/action. H4/H5/H6 count states are 7315/33649/134596. H6 value is `0.3922438401236031`. Old 18–22x timing is retired.
+- mathematical definitions and proof ledger;
+- explicit related-work audit preventing false novelty claims;
+- real-problem audit using modern procedural datasets;
+- exact decision-equivalent hitting-set implementation;
+- contextual exception/guard repair;
+- exact and soft MILPs with exhaustive-oracle tests;
+- state-level leakage-resistant AMLGym bridge;
+- exact holdout error certification and paired baseline test;
+- controlled finite-support benchmark;
+- multi-seed sample-size / label-noise stress;
+- frozen inherited MECCANO/IMPACT evidence provenance;
+- 71 passing tests;
+- deterministic Paper A manifest.
 
-## Remaining external gates
+## External confirmatory gate
 
-Paper A: full frozen AMLGym matrix across modern learners/domains, failures retained; authoritative positive/negative procedural admissibility labels; PDDL-effects/planning evaluation if claims extend beyond applicability.
+The only major numerical gate still requiring an internet-capable runtime is the frozen AMLGym 1.0.11 matrix: 160 domain/learner/budget cells. The GitHub Actions workflow is designed to execute it without changing the frozen protocol and to fail if any cell is missing or failed.
 
-Paper B: real source reliability/orientation and acquisition-cost data; real reference/calibration probes; external POMDP library/implementation cross-check; external sequential dataset where count exchangeability is defensible.
+Until that matrix exists, the manuscript must say **external cross-domain validation pending** rather than claim broad improvement over modern action-model learners.
 
-Use the phrase **Q1-scale research core / journal working paper**, not **Q1-ready accepted result**.
+## Paper B practical adapter
+
+The second DOVOD line now has an action-local executable adapter that converts physical completion probabilities and a finite procedural prerequisite version space into the exact hidden-world source-selection solver. The package includes frozen v12 real-procedure evidence (777 MECCANO episodes; 187 mixed-uncertainty episodes) separately from persistent-source theoretical experiments.

@@ -1,14 +1,59 @@
 {
   "schema": "dovod-q1-amlgym-contract-v3",
   "frozen_on": "2026-09-05",
-  "amlgym": {"package": "amlgym", "version": "1.0.11", "upstream_repo": "LamannaLeonardo/AMLGym"},
-  "domains": ["barman","blocksworld","childsnack","depots","elevators","ferry","floortile","goldminer","grippers","matchingbw","miconic","nomystery","npuzzle","parking","rovers","satellite","sokoban","spanner","tpp","transport"],
+  "amlgym": {
+    "package": "amlgym",
+    "version": "1.0.11",
+    "upstream_repo": "LamannaLeonardo/AMLGym"
+  },
+  "domains": [
+    "barman", "blocksworld", "childsnack", "depots", "elevators",
+    "ferry", "floortile", "goldminer", "grippers", "matchingbw",
+    "miconic", "nomystery", "npuzzle", "parking", "rovers",
+    "satellite", "sokoban", "spanner", "tpp", "transport"
+  ],
   "learner_families": ["SAM", "OffLAM", "NOLAM", "ROSAME"],
   "trace_budgets": [3, 10],
-  "predictive_sampling": {"problems_per_domain": 2, "states_per_problem": 12, "ground_actions_per_operator_per_state": 4, "state_ranking": "SHA256 deterministic rank", "action_ranking": "SHA256 deterministic rank"},
-  "decision_split": {"unit": "predictive state", "hash_key": "state-split|domain|problem|state_index", "buckets": 1000, "repair": [0,500], "calibration": [500,750], "test": [750,1000], "note": "All candidate ground actions from one state remain in the same split; action-level leakage is forbidden."},
-  "dovod_repair": {"max_action_local_features": 8, "max_context_width": 1, "edit_penalty": 0.25, "target": "ground-action applicability decision only"},
-  "primary_endpoints": {"cell": ["test base risk","test DOVOD risk","paired exact McNemar/binomial comparison","DOVOD one-sided 95% exact holdout risk bound"], "aggregate": "domain-mean test-risk improvement", "independent_aggregate_unit": "domain", "confirmatory_test": "two-sided exact sign test over 20 domain means", "failure_policy": "Every frozen learner/domain/budget cell remains in the denominator. Timeout, dependency, parse, learner, or evaluation failures are explicit failed cells."},
-  "runner": {"case_schema": "dovod-q1-amlgym-case-v3", "merged_schema": "dovod-q1-amlgym-merged-v3", "cell_timeout_seconds": 900},
+  "predictive_sampling": {
+    "problems_per_domain": 2,
+    "states_per_problem": 12,
+    "ground_actions_per_operator_per_state": 4,
+    "state_ranking": "SHA256 deterministic rank",
+    "action_ranking": "SHA256 deterministic rank"
+  },
+  "decision_split": {
+    "unit": "predictive state",
+    "hash_key": "state-split|domain|problem|state_index",
+    "buckets": 1000,
+    "repair": [0, 500],
+    "calibration": [500, 750],
+    "test": [750, 1000],
+    "note": "All candidate ground actions from one state remain in the same split; action-level leakage is forbidden."
+  },
+  "dovod_repair": {
+    "max_action_local_features": 8,
+    "max_context_width": 1,
+    "edit_penalty": 0.25,
+    "target": "ground-action applicability decision only"
+  },
+  "primary_endpoints": {
+    "cell": [
+      "test base risk",
+      "test global-override risk",
+      "test DOVOD risk",
+      "paired exact McNemar/binomial DOVOD-vs-base",
+      "paired exact McNemar/binomial DOVOD-vs-global-override",
+      "DOVOD one-sided 95% exact holdout risk bound"
+    ],
+    "aggregate": "domain-mean test-risk improvement against both upstream and global-override comparators",
+    "independent_aggregate_unit": "domain",
+    "confirmatory_test": "two-sided exact sign tests over 20 domain means for DOVOD-vs-base and DOVOD-vs-global-override",
+    "failure_policy": "Every frozen learner/domain/budget cell remains in the denominator. Timeout, dependency, parse, learner, or evaluation failures are explicit failed cells."
+  },
+  "runner": {
+    "case_schema": "dovod-q1-amlgym-case-v3",
+    "merged_schema": "dovod-q1-amlgym-merged-v4",
+    "cell_timeout_seconds": 900
+  },
   "claim_boundary": "Protocol frozen before external outcomes. DOVOD repairs applicability decisions only. No claim about effect correctness, plan validity, physical safety, or authoritative mechanical necessity follows from this benchmark."
 }

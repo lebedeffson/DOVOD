@@ -1,40 +1,118 @@
-name: Q1 Paper A AMLGym confirmatory matrix
+name: Q1 Paper A research validation
+
 on:
   workflow_dispatch:
   push:
-    branches: ['q1/paper-a-amlgym-20260905']
+    branches:
+      - 'q1/**'
     paths:
       - 'research/q1_2026/**'
       - '.github/workflows/q1-paper-a.yml'
 
 jobs:
+  local-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - name: Install core dependencies
+        run: python -m pip install -r research/q1_2026/requirements.txt
+      - name: Run Paper A release checks
+        working-directory: research/q1_2026
+        run: make paper-a-release
+      - name: Upload local Paper A evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-a-local-evidence
+          path: |
+            research/q1_2026/results/paper_a_contextual_benchmark.json
+            research/q1_2026/results/paper_a_stress.json
+          if-no-files-found: error
+
+  paper-b-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - name: Install core dependencies
+        run: python -m pip install -r research/q1_2026/requirements.txt
+      - name: Run Paper B exact and practical validation
+        working-directory: research/q1_2026
+        run: |
+          python benchmarks/run_paper_b.py
+          python benchmarks/run_paper_b_practical.py
+      - name: Upload Paper B evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-b-local-evidence
+          path: |
+            research/q1_2026/results/paper_b_orientation_planning.json
+            research/q1_2026/results/paper_b_practical_source_selection.json
+          if-no-files-found: error
+
   amlgym:
+    needs: local-core
     runs-on: ubuntu-latest
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        domain: [barman, blocksworld, childsnack, depots, elevators, ferry, floortile, goldminer, grippers, matchingbw, miconic, nomystery, npuzzle, parking, rovers, satellite, sokoban, spanner, tpp, transport]
+        domain:
+          - barman
+          - blocksworld
+          - childsnack
+          - depots
+          - elevators
+          - ferry
+          - floortile
+          - goldminer
+          - grippers
+          - matchingbw
+          - miconic
+          - nomystery
+          - npuzzle
+          - parking
+          - rovers
+          - satellite
+          - sokoban
+          - spanner
+          - tpp
+          - transport
         trace_budget: [3, 10]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: '3.11'}
-      - name: Install frozen environment
+        with:
+          python-version: '3.11'
+      - name: Install AMLGym protocol environment
         run: |
           python -m pip install -r research/q1_2026/requirements.txt
           python -m pip install -r research/q1_2026/requirements-amlgym.txt
           python - <<'PY'
           import importlib.metadata
-          v=importlib.metadata.version('amlgym')
-          assert v=='1.0.11', v
-          print('AMLGym',v)
+          v = importlib.metadata.version('amlgym')
+          assert v == '1.0.11', v
+          print('AMLGym', v)
           PY
-      - name: Run domain/budget shard
+      - name: Run frozen domain shard
         working-directory: research/q1_2026
         run: |
-          python benchmarks/run_amlgym_matrix.py --domains '${{ matrix.domain }}' --trace-budgets '${{ matrix.trace_budget }}' --output-dir artifacts/amlgym --summary results/shard.json
-      - name: Upload cells
+          python benchmarks/run_amlgym_matrix.py \
+            --domains '${{ matrix.domain }}' \
+            --trace-budgets '${{ matrix.trace_budget }}' \
+            --output-dir artifacts/amlgym \
+            --summary results/shard_${{ matrix.domain }}_n${{ matrix.trace_budget }}.json
+      - name: Upload shard even if learner cells failed
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -42,26 +120,53 @@ jobs:
           path: research/q1_2026/artifacts/amlgym/*.json
           if-no-files-found: warn
 
-  merge:
+  merge-amlgym:
     needs: amlgym
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: '3.11'}
-      - run: python -m pip install -r research/q1_2026/requirements.txt
-      - uses: actions/download-artifact@v4
+        with:
+          python-version: '3.11'
+      - name: Install core dependencies
+        run: python -m pip install -r research/q1_2026/requirements.txt
+      - name: Download all AMLGym shards
+        uses: actions/download-artifact@v4
         with:
           pattern: amlgym-*
           path: research/q1_2026/artifacts/amlgym_download
           merge-multiple: true
-      - name: Merge matrix
+      - name: Merge frozen matrix
         working-directory: research/q1_2026
-        run: python benchmarks/merge_amlgym_results.py --input-dir artifacts/amlgym_download --output results/paper_a_amlgym_matrix.json
-      - if: always()
+        run: |
+          set +e
+          python benchmarks/merge_amlgym_results.py \
+            --input-dir artifacts/amlgym_download \
+            --output results/paper_a_amlgym_matrix.json
+          echo $? > /tmp/merge_status
+          set -e
+      - name: Upload merged external evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: paper-a-amlgym-matrix
           path: research/q1_2026/results/paper_a_amlgym_matrix.json
           if-no-files-found: warn
+      - name: Enforce complete successful confirmatory matrix
+        working-directory: research/q1_2026
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('results/paper_a_amlgym_matrix.json')
+          assert p.exists(), 'merged matrix missing'
+          r = json.loads(p.read_text())
+          assert r['complete'] is True, (len(r['missing']), len(r['unexpected']))
+          assert r['expected_case_count'] == 160
+          assert r['summary']['failed_count'] == 0, r['summary']['failed_count']
+          assert r['summary']['dovod_vs_base']['domain_sign_test'] is not None
+          assert r['summary']['dovod_vs_global_override']['domain_sign_test'] is not None
+          print(json.dumps(r['summary'], indent=2))
+          PY
