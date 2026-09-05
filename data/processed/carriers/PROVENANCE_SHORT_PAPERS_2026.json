@@ -1,0 +1,17 @@
+{
+  "schema": "dovod-derived-carrier-evidence-v2",
+  "description": "Compact relation-level carrier counts derived from the final reviewer archive. Raw event/trial identities and third-party video data are intentionally not redistributed in this public short-paper layer.",
+  "files": [
+    {
+      "path": "meccano_carrier_counts.json",
+      "sha256": "3a06ac34a2fc39d100cf5220779680753117ff44ea3a85f2946973ae4940e5b6",
+      "relations": 201
+    },
+    {
+      "path": "impact_carrier_counts.json",
+      "sha256": "5b55959962581ce315b32e1180d4a1de2108f0eeaf733284e25430adb9743283",
+      "relations": 259
+    }
+  ],
+  "boundary": "These compact counts support deterministic carrier-robustness and finite-population rarefaction checks; they are not a substitute for a Level-3 rerun from the original third-party datasets."
+}
