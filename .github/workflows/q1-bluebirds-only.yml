@@ -1,0 +1,35 @@
+name: Q1 Blue Birds external validation
+
+on:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-bluebirds-only.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bluebirds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python benchmarks/run_paper_b_bluebirds.py
+      - name: Emit external validation result
+        run: cat results/paper_b_bluebirds_external.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-bluebirds-external
+          path: research/q1_2026/results/paper_b_bluebirds_external.json
+          if-no-files-found: error
