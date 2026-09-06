@@ -25,11 +25,21 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - run: python benchmarks/run_paper_b_bluebirds.py
+      - name: Fetch exact pinned public inputs
+        run: |
+          mkdir -p artifacts/bluebirds
+          curl -fsSL 'https://raw.githubusercontent.com/welinder/cubam/fe5ba700f1adbb489c69af311558d64370d73d36/demo/bluebirds/gt.yaml' -o artifacts/bluebirds/gt.yaml
+          curl -fsSL 'https://raw.githubusercontent.com/welinder/cubam/fe5ba700f1adbb489c69af311558d64370d73d36/demo/bluebirds/labels.yaml' -o artifacts/bluebirds/labels.yaml
+          printf '%s  %s\n' '6791189f35bf9823b4fffaf4b656817ecb1a7048' artifacts/bluebirds/gt.yaml | sha1sum -c -
+          printf '%s  %s\n' 'b4db48e832797ff151ded434d970f7bd9d3130c2' artifacts/bluebirds/labels.yaml | sha1sum -c -
+      - run: python benchmarks/run_paper_b_bluebirds.py --gt artifacts/bluebirds/gt.yaml --labels artifacts/bluebirds/labels.yaml
       - name: Emit external validation result
         run: cat results/paper_b_bluebirds_external.json
       - uses: actions/upload-artifact@v4
         with:
           name: q1-bluebirds-external
-          path: research/q1_2026/results/paper_b_bluebirds_external.json
+          path: |
+            research/q1_2026/results/paper_b_bluebirds_external.json
+            research/q1_2026/artifacts/bluebirds/gt.yaml
+            research/q1_2026/artifacts/bluebirds/labels.yaml
           if-no-files-found: error
