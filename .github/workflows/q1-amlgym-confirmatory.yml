@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/q1-amlgym-confirmatory.yml'
       - 'research/q1_2026/configs/amlgym_q1_contract.json'
+      - 'research/q1_2026/external_evidence/**'
       - 'research/q1_2026/paper_a/amlgym_bridge.py'
       - 'research/q1_2026/paper_a/contextual_repair.py'
       - 'research/q1_2026/paper_a/deployment.py'
