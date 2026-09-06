@@ -1,0 +1,144 @@
+name: Q1 AMLGym confirmatory v4
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-amlgym-confirmatory.yml'
+      - 'research/q1_2026/configs/amlgym_q1_contract.json'
+      - 'research/q1_2026/paper_a/amlgym_bridge.py'
+      - 'research/q1_2026/paper_a/contextual_repair.py'
+      - 'research/q1_2026/paper_a/deployment.py'
+      - 'research/q1_2026/paper_a/protocol.py'
+      - 'research/q1_2026/benchmarks/check_amlgym_confirmatory_protocol.py'
+      - 'research/q1_2026/benchmarks/run_amlgym_confirmatory_case.py'
+      - 'research/q1_2026/benchmarks/run_amlgym_confirmatory_matrix.py'
+      - 'research/q1_2026/benchmarks/merge_amlgym_confirmatory_results.py'
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Verify full local two-paper release before opening confirmatory labels
+        run: make release
+      - name: Verify all-domain confirmatory state protocol without opening labels
+        run: python benchmarks/check_amlgym_confirmatory_protocol.py
+      - name: Assert label-free protocol preflight
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d = json.loads(Path('artifacts/confirmatory-protocol-preflight.json').read_text())
+          assert d['all_domains_clean'] is True
+          assert len(d['domains']) == 20
+          assert all(row['overlap'] == 0 for row in d['domains'])
+          print('protocol preflight clean for', len(d['domains']), 'domains')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: confirmatory-preflight
+          path: research/q1_2026/artifacts/confirmatory-protocol-preflight.json
+          if-no-files-found: error
+
+  matrix:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+        trace_budget: [3, 10]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run frozen confirmatory shard
+        run: >-
+          python benchmarks/run_amlgym_confirmatory_matrix.py
+          --algorithms '${{ matrix.algorithm }}'
+          --trace-budgets '${{ matrix.trace_budget }}'
+          --timeout-per-case 900
+          --output-dir 'artifacts/amlgym-confirmatory/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}'
+          --summary 'artifacts/amlgym-confirmatory/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}-summary.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: confirmatory-${{ matrix.algorithm }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/amlgym-confirmatory/**/*.json
+          if-no-files-found: error
+
+  merge:
+    if: always()
+    needs: [preflight, matrix]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: confirmatory-*-n*
+          path: research/q1_2026/artifacts/amlgym-confirmatory-ci
+          merge-multiple: true
+      - name: Merge all 160 frozen cells
+        run: >-
+          python benchmarks/merge_amlgym_confirmatory_results.py
+          artifacts/amlgym-confirmatory-ci
+          --output results/paper_a_amlgym_confirmatory_matrix.json
+      - name: Emit scientific result without outcome-based CI filtering
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d = json.loads(Path('results/paper_a_amlgym_confirmatory_matrix.json').read_text())
+          print(json.dumps({
+            'complete_execution': d['complete_execution'],
+            'protocol_clean': d['protocol_clean'],
+            'failed_or_timeout_count': d['failed_or_timeout_count'],
+            'scientific_summary': {k:v for k,v in d['scientific_summary'].items() if k != 'rows'},
+          }, indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: q1-amlgym-confirmatory-matrix
+          path: research/q1_2026/results/paper_a_amlgym_confirmatory_matrix.json
+          if-no-files-found: error

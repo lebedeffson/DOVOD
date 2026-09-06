@@ -1,41 +1,68 @@
 {
-  "schema": "dovod-q1-amlgym-contract-v2",
-  "frozen_on": "2026-09-05",
+  "schema": "dovod-q1-amlgym-contract-v4",
+  "frozen_on": "2026-09-06",
+  "status": "confirmatory_protocol_frozen_after_pilot_diagnostics",
   "amlgym": {
     "package": "amlgym",
     "version": "1.0.11",
     "upstream_repo": "LamannaLeonardo/AMLGym",
-    "upstream_ref": "main",
     "benchmark_family": "IPC learning tracks represented by AMLGym"
   },
   "domains": [
-    "barman", "blocksworld", "childsnack", "depots", "elevators",
-    "ferry", "floortile", "goldminer", "grippers", "matchingbw",
-    "miconic", "nomystery", "npuzzle", "parking", "rovers", "satellite",
-    "sokoban", "spanner", "tpp", "transport"
+    "barman", "blocksworld", "childsnack", "depots", "elevators", "ferry",
+    "floortile", "goldminer", "grippers", "matchingbw", "miconic", "nomystery",
+    "npuzzle", "parking", "rovers", "satellite", "sokoban", "spanner", "tpp", "transport"
   ],
   "learner_families": ["SAM", "OffLAM", "NOLAM", "ROSAME"],
   "trace_budgets": [3, 10],
   "nolam_noise": 0.0,
   "predictive_sampling": {
     "problems_per_domain": 2,
-    "states_per_problem": 12,
+    "pilot_states_per_problem_reserved": 12,
+    "confirmatory_states_per_problem": 12,
     "ground_actions_per_operator_per_state": 4,
+    "state_ranking": "sha256(confirmatory-state-rank-v1, domain, problem, semantic_state_fingerprint) after pilot exclusion",
+    "state_deduplication": "exact canonical symbolic-state fingerprint before ranking",
+    "split_unit": "problem-scoped semantic_state_fingerprint",
     "repair_bucket": [0, 500],
     "calibration_bucket": [500, 750],
     "test_bucket": [750, 1000],
-    "bucket_hash": "sha256"
+    "bucket_hash": "sha256",
+    "pilot_selector_replay": "sha256 index ranking exactly matching inspected pilot: state|domain|problem|index",
+    "confirmatory_candidate_pool": "all predictive states excluding every semantic duplicate of an actually selected pilot state"
   },
   "dovod_repair": {
     "max_action_local_features": 8,
     "max_context_width": 1,
     "edit_penalty": 0.25,
     "false_allow_weight": 1.0,
-    "false_block_weight": 1.0
+    "false_block_weight": 1.0,
+    "minimum_repair_samples_per_operator": 4
   },
-  "metrics": [
-    "syntactic_precision", "syntactic_recall",
-    "heldout_applicability_risk", "heldout_false_allow_rate", "heldout_false_block_rate"
+  "deployment_gate": {
+    "unit": "operator",
+    "selection_data": "calibration_only",
+    "deploy_nonempty_if": [
+      "candidate calibration risk is strictly lower than upstream calibration risk",
+      "candidate calibration false-allow count is not greater than upstream calibration false-allow count"
+    ],
+    "tie_policy": "reject nonempty repair and use upstream decision",
+    "empty_noop_policy": "retain as bookkeeping-equivalent to upstream"
+  },
+  "confirmatory_integrity": {
+    "pilot_and_confirmatory_semantic_state_overlap": 0,
+    "test_labels_used_for_model_or_gate_selection": false,
+    "performance_threshold_used_to_accept_or_reject_the_method": false,
+    "failed_or_timeout_cells_retained": true,
+    "expected_case_count": 160,
+    "pilot_selector_is_replayed_exactly": true
+  },
+  "primary_metrics": [
+    "heldout_applicability_risk",
+    "heldout_false_allow_rate",
+    "heldout_false_block_rate",
+    "heldout_class_balanced_risk"
   ],
-  "claim_boundary": "The contract is frozen before external outcomes are inspected. Unsupported or failed learner/domain combinations are retained as explicit statuses. The DOVOD layer repairs applicability decisions only; it does not rewrite the upstream PDDL model or claim effects/problem-solving improvements without separate evidence."
+  "statistical_unit_for_broad_claims": "domain",
+  "claim_boundary": "Pilot outcomes motivated the frozen v4 deployment and split protocol. The historical pilot index-hash selector is replayed exactly, and every semantic duplicate of an actually inspected pilot state is removed before confirmatory selection. Confirmatory test labels are never used for repair fitting or deployment gating. The full matrix is reported regardless of improvement, tie, worsening, failure, or timeout; scientific performance is not a CI pass condition. DOVOD repairs applicability decisions only and does not rewrite learned effects."
 }
