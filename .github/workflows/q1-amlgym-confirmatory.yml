@@ -226,10 +226,11 @@ jobs:
           pattern: confirmatory-*-n*
           path: research/q1_2026/artifacts/amlgym-confirmatory-ci
           merge-multiple: true
-      - name: Merge all 160 frozen cells
+      - name: Merge all 160 frozen cells with explicit infrastructure accounting
         run: >-
           python benchmarks/merge_amlgym_confirmatory_results.py
           artifacts/amlgym-confirmatory-ci
+          --account-missing-as-infrastructure-failures
           --output results/paper_a_amlgym_confirmatory_matrix.json
       - name: Emit scientific result without outcome-based CI filtering
         run: |
@@ -239,8 +240,11 @@ jobs:
           d = json.loads(Path('results/paper_a_amlgym_confirmatory_matrix.json').read_text())
           print(json.dumps({
             'complete_execution': d['complete_execution'],
+            'observed_case_count': d['observed_case_count'],
+            'accounted_case_count': d['accounted_case_count'],
             'protocol_clean': d['protocol_clean'],
             'failed_or_timeout_count': d['failed_or_timeout_count'],
+            'synthesized_infrastructure_cells': d['synthesized_infrastructure_cells'],
             'scientific_summary': {k:v for k,v in d['scientific_summary'].items() if k != 'rows'},
           }, indent=2))
           PY
