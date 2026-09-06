@@ -7,6 +7,7 @@ on:
       - 'q1/full-rebuild-20260905'
     paths:
       - '.github/workflows/q1-amlgym-confirmatory.yml'
+      - 'research/q1_2026/sitecustomize.py'
       - 'research/q1_2026/configs/amlgym_q1_contract.json'
       - 'research/q1_2026/external_evidence/**'
       - 'research/q1_2026/paper_a/amlgym_bridge.py'
@@ -79,6 +80,9 @@ jobs:
         working-directory: research/q1_2026
     env:
       PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      DOVOD_CONFIRMATORY_SEED: '20260906'
+      DOVOD_CONFIRMATORY_TORCH: ${{ matrix.algorithm == 'ROSAME' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -90,7 +94,7 @@ jobs:
             research/q1_2026/requirements-amlgym.txt
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
-      - name: Run frozen confirmatory shard
+      - name: Run frozen confirmatory shard with post-freeze RNG pinning
         run: >-
           python benchmarks/run_amlgym_confirmatory_matrix.py
           --algorithms '${{ matrix.algorithm }}'
@@ -138,6 +142,9 @@ jobs:
         working-directory: research/q1_2026
     env:
       PYTHONPATH: .
+      PYTHONHASHSEED: '0'
+      DOVOD_CONFIRMATORY_SEED: '20260906'
+      DOVOD_CONFIRMATORY_TORCH: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -149,7 +156,7 @@ jobs:
             research/q1_2026/requirements-amlgym.txt
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
-      - name: Run frozen ROSAME n10 confirmatory case with receipt
+      - name: Run frozen ROSAME n10 confirmatory case with receipt and pinned RNG
         shell: bash
         run: |
           set +e
@@ -184,6 +191,10 @@ jobs:
               'status': 'timeout' if rc == 124 else 'failed',
               'failure_stage': 'external_case_process',
               'error': f'process exit code {rc}; no case JSON produced',
+              'reproducibility_amendment': {
+                  'pythonhashseed': os.environ.get('PYTHONHASHSEED'),
+                  'rng_seed': os.environ.get('DOVOD_CONFIRMATORY_SEED'),
+              },
           }
           Path(os.environ['OUT']).write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
           PY
