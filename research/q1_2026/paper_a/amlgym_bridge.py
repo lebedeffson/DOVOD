@@ -175,26 +175,31 @@ def predict_operator_repair(model: OperatorRepair, observation: DecisionObservat
 def decision_metrics(
     observations: Sequence[DecisionObservation],
     predictions: Sequence[int],
-) -> dict[str, float | int]:
+) -> dict[str, float | int | None]:
     observations = tuple(observations)
     predictions = tuple(map(int, predictions))
     if len(observations) != len(predictions):
         raise ValueError("observations/predictions length mismatch")
     if not observations:
         return {
-            "n": 0, "risk": 0.0, "false_allow_rate": 0.0, "false_block_rate": 0.0,
-            "false_allows": 0, "false_blocks": 0,
+            "n": 0, "risk": 0.0, "class_balanced_risk": None,
+            "false_allow_rate": 0.0, "false_block_rate": 0.0,
+            "false_allows": 0, "false_blocks": 0, "positives": 0, "negatives": 0,
         }
     fa = sum(p == 1 and o.truth_allow == 0 for p, o in zip(predictions, observations))
     fb = sum(p == 0 and o.truth_allow == 1 for p, o in zip(predictions, observations))
     errors = fa + fb
     neg = sum(o.truth_allow == 0 for o in observations)
     pos = sum(o.truth_allow == 1 for o in observations)
+    false_allow_rate = fa / neg if neg else 0.0
+    false_block_rate = fb / pos if pos else 0.0
+    balanced = 0.5 * (false_allow_rate + false_block_rate) if neg and pos else None
     return {
         "n": len(observations),
         "risk": errors / len(observations),
-        "false_allow_rate": fa / neg if neg else 0.0,
-        "false_block_rate": fb / pos if pos else 0.0,
+        "class_balanced_risk": balanced,
+        "false_allow_rate": false_allow_rate,
+        "false_block_rate": false_block_rate,
         "false_allows": fa,
         "false_blocks": fb,
         "positives": pos,
