@@ -1,0 +1,23 @@
+{
+  "schema": "dovod-q1-amlgym-hard-analysis-v1",
+  "frozen_on": "2026-09-06",
+  "provenance": "Frozen while the four learning_hard n=1 GitHub Actions shards were still in progress and before any hard-stress outcome or summary was inspected.",
+  "statistical_unit": "domain",
+  "primary_estimand": "For each domain, average held-out applicability-risk reduction (upstream minus calibration-gated DOVOD) across learner families with available predictive decision evidence; then average equally across domains.",
+  "primary_inference": {
+    "bootstrap_replicates": 50000,
+    "bootstrap_seed": 20260907,
+    "bootstrap_unit": "domain",
+    "interval": "percentile_95pct",
+    "exact_sign_flip": "two-sided over nonzero per-domain mean reductions"
+  },
+  "safety_diagnostics": [
+    "worsened_gated_cells",
+    "gate_prevented_ungated_harm_cells",
+    "gate_missed_ungated_benefit_cells",
+    "worst_gated_risk_change",
+    "worst_ungated_risk_change"
+  ],
+  "coverage_rule": "Retain every requested learner/domain cell as ok, failed, timeout, or predictive-bridge-unavailable; never silently drop unsupported cells.",
+  "claim_boundary": "Exploratory native AMLGym learning_hard stress analysis. The protocol and this domain-clustered analysis were frozen before hard-stress outcomes were inspected, but the experiment was designed after partial primary-matrix inspection, so it is not a preregistered primary endpoint."
+}
