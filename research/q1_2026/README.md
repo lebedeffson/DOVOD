@@ -20,7 +20,9 @@ Controlled benchmark facts:
 
 External AMLGym validation uses a frozen v4 confirmatory design over 20 domains x 4 learner families x 2 trace budgets = 160 prespecified cells. Pilot states are replayed exactly and excluded by semantic fingerprint before confirmatory ranking. Repair, calibration, and test are split by a fixed SHA-256 bucket; test labels do not affect fitting or deployment gating. Failed learner/tool cells and empty held-out test subsets are retained rather than silently removed.
 
-The canonical full-matrix result is stored in `results/paper_a_amlgym_confirmatory_matrix.json`: all 160 cells are present and the protocol is clean. 5 cells are retained as failures/timeouts; 80 successful cells have empty held-out test subsets; among 75 usable cells, 7 improve, 68 tie, and 0 worsen. Domain-level mean risk has 4 wins, 6 ties, and 0 losses (exact two-sided sign-test p=0.125). This is evidence for conservative selective deployment, not broad superiority across AMLGym.
+The canonical frozen full-matrix result is stored in `results/paper_a_amlgym_confirmatory_matrix.json`: all 160 cells are present and the protocol is clean. 5 cells are retained as failures/timeouts; 80 successful cells have empty held-out test subsets; among 75 usable cells, 7 improve, 68 tie, and 0 worsen. Domain-level mean risk has 4 wins, 6 ties, and 0 losses (exact two-sided sign-test p=0.125). This is evidence for conservative selective deployment, not broad superiority across AMLGym.
+
+A later clean replay exposed upstream learner-process nondeterminism because the primary run did not pin Python hash order and common Python/NumPy/PyTorch RNG seeds. The primary result above is not retroactively replaced. A post-freeze reproducibility amendment now pins `PYTHONHASHSEED=0`, Python/NumPy seed `20260906`, and the same PyTorch seed for ROSAME while preserving the frozen domains, budgets, semantic split, repair vocabulary, deployment gate, metrics, and 900-second per-case limit. Its aggregate is treated as a separate reproducibility diagnostic.
 
 ## Paper B — source-typed evidence acquisition
 
@@ -32,7 +34,7 @@ Controlled/recovered-core facts:
 
 - count-DP exactly matches value and first action of both exact reference representations on all three 256-world / 9-query horizon-3 cases;
 - history-to-count state ratio: 4.642857;
-- mean count-vs-posterior-vector wall-clock speedup on the clean CI runner: about 8.51x;
+- mean count-vs-posterior-vector wall-clock speedup on the final clean CI runner: about 6.33x (runtime-specific engineering evidence);
 - horizons 4/5/6 visit exactly 7,315 / 33,649 / 134,596 count states, matching the combinatorial formula;
 - POMCP-style baseline chooses an exact-optimal root action in 5/5 controlled seeds; mean absolute value error 0.01307.
 
