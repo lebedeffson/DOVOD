@@ -4,14 +4,12 @@ import argparse
 import json
 import os
 import platform
-import sys
 import tempfile
 import time
 from importlib.metadata import version as package_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
 
 from paper_a.amlgym_bridge import (  # noqa: E402
     DecisionObservation,
@@ -103,6 +101,48 @@ def collect_decision_observations(
     return rows
 
 
+def _gate_repairs_by_calibration(rows, repaired_models):
+    """Deploy only repairs that strictly improve independent calibration risk.
+
+    The repair split proposes sparse edits. Calibration is then used only as a
+    deployment gate, never to construct features or edit candidates. Non-empty edits
+    that merely tie the upstream model are rejected to avoid gratuitous modification.
+    """
+    deployed = {}
+    gate = {}
+    for op, model in sorted(repaired_models.items()):
+        obs = [
+            o for split, o in rows
+            if split == "calibration" and parse_action_label(o.action_label)[0] == op
+        ]
+        if not obs:
+            gate[op] = {"deployed": False, "reason": "no_calibration_samples"}
+            continue
+        base_metrics = decision_metrics(obs, [o.base_allow for o in obs])
+        preds = [predict_operator_repair(model, o) for o in obs]
+        repair_metrics = decision_metrics(obs, preds)
+        improve = repair_metrics["risk"] < base_metrics["risk"] - 1e-15
+        unchanged_empty = (
+            not model.fit.selected_edits and repair_metrics["risk"] == base_metrics["risk"]
+        )
+        use = bool(improve or unchanged_empty)
+        if use:
+            deployed[op] = model
+        gate[op] = {
+            "deployed": use,
+            "base_risk": base_metrics["risk"],
+            "repair_risk": repair_metrics["risk"],
+            "base_class_balanced_risk": base_metrics["class_balanced_risk"],
+            "repair_class_balanced_risk": repair_metrics["class_balanced_risk"],
+            "selected_edit_count": len(model.fit.selected_edits),
+            "reason": (
+                "strict_calibration_improvement" if improve
+                else ("empty_noop" if unchanged_empty else "no_strict_calibration_gain")
+            ),
+        }
+    return deployed, gate
+
+
 def _split_metrics(rows, repaired_models):
     out = {}
     for split in ("repair", "calibration", "test"):
@@ -172,7 +212,11 @@ def run_case(args) -> dict:
                     max_context_width=args.context_width,
                     edit_penalty=args.edit_penalty,
                 )
-            decision = _split_metrics(rows, repairs)
+            deployed_repairs, calibration_gate = _gate_repairs_by_calibration(rows, repairs)
+            decision = _split_metrics(rows, deployed_repairs)
+            ungated_decision = _split_metrics(rows, repairs)
+            for split in decision:
+                decision[split]["dovod_ungated"] = ungated_decision[split]["dovod"]
             repair_summary = {
                 op: {
                     "repair_samples": len(by_operator[op]),
@@ -188,6 +232,7 @@ def run_case(args) -> dict:
                         for e in model.fit.selected_edits
                     ],
                     "fit_errors": len(model.fit.error_indices),
+                    "calibration_gate": calibration_gate.get(op),
                 }
                 for op, model in repairs.items()
             }
@@ -197,7 +242,7 @@ def run_case(args) -> dict:
             pred_error = f"{type(exc).__name__}: {exc}"
 
     return {
-        "schema": "dovod-q1-amlgym-case-v2",
+        "schema": "dovod-q1-amlgym-case-v3",
         "status": "ok",
         "domain": args.domain,
         "algorithm": args.algorithm,
@@ -212,7 +257,8 @@ def run_case(args) -> dict:
         "predictive_bridge_error": pred_error,
         "claim_boundary": (
             "The learned PDDL is produced by the named AMLGym learner. DOVOD is evaluated only as a "
-            "post-hoc applicability decision repair on a hash-frozen state/action split. It does not alter "
+            "post-hoc applicability decision repair on a hash-frozen state/action split. Non-empty repairs "
+            "are deployed only after strict independent calibration-risk improvement. It does not alter "
             "effects or claim downstream planning improvement in this case result."
         ),
     }
@@ -236,7 +282,7 @@ def main() -> None:
         report = run_case(args)
     except Exception as exc:
         report = {
-            "schema": "dovod-q1-amlgym-case-v2",
+            "schema": "dovod-q1-amlgym-case-v3",
             "status": "failed",
             "domain": args.domain,
             "algorithm": args.algorithm,
