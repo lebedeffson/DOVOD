@@ -6,6 +6,9 @@ on:
       - q1/full-rebuild-20260905
     paths:
       - '.github/workflows/q1-amlgym-repair-smoke.yml'
+      - 'research/q1_2026/benchmarks/run_amlgym_case.py'
+      - 'research/q1_2026/benchmarks/run_amlgym_matrix.py'
+      - 'research/q1_2026/paper_a/**'
   workflow_dispatch:
 
 permissions:
@@ -34,6 +37,7 @@ jobs:
           --timeout-per-case 900
           --output-dir artifacts/amlgym-repair-smoke
           --summary results/paper_a_amlgym_repair_smoke.json
+          --fail-on-case-failure
       - name: Emit summary and case deltas
         if: always()
         run: |
