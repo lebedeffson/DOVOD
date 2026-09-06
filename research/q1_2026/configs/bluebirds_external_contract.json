@@ -1,0 +1,33 @@
+{
+  "schema": "dovod-q1-bluebirds-contract-v1",
+  "frozen_on": "2026-09-05",
+  "dataset": {
+    "name": "Blue Birds",
+    "source_repo": "welinder/cubam",
+    "source_commit": "fe5ba700f1adbb489c69af311558d64370d73d36",
+    "ground_truth_path": "demo/bluebirds/gt.yaml",
+    "labels_path": "demo/bluebirds/labels.yaml",
+    "ground_truth_blob_sha": "6791189f35bf9823b4fffaf4b656817ecb1a7048",
+    "labels_blob_sha": "b4db48e832797ff151ded434d970f7bd9d3130c2",
+    "citation": "Welinder, Branson, Belongie, Perona. The Multidimensional Wisdom of Crowds. NIPS 2010."
+  },
+  "split": {
+    "hash": "sha256",
+    "unit": "task_id",
+    "calibration_bucket": [0, 300],
+    "test_bucket": [300, 1000]
+  },
+  "source_model": {
+    "orientation_rule": "flip only when calibration accuracy is below 0.5",
+    "reliability_estimator": "Beta(1,1) posterior mean after orientation correction",
+    "selection_rule": "descending posterior oriented reliability with worker-id tie break",
+    "top_k": [1, 3, 5, 7],
+    "label_free_hash_reference_replicates": 256
+  },
+  "primary_external_checks": [
+    "calibration-to-heldout worker reliability association",
+    "heldout orientation-correction vote accuracy",
+    "calibration-selected top-k heldout accuracy versus label-free hash-ranked source sets"
+  ],
+  "claim_boundary": "External source-reliability validation only. This dataset does not validate procedural action models and does not directly evaluate the static-world Bellman policy."
+}

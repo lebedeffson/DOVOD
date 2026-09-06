@@ -1,0 +1,41 @@
+{
+  "schema": "dovod-q1-amlgym-contract-v2",
+  "frozen_on": "2026-09-05",
+  "amlgym": {
+    "package": "amlgym",
+    "version": "1.0.11",
+    "upstream_repo": "LamannaLeonardo/AMLGym",
+    "upstream_ref": "main",
+    "benchmark_family": "IPC learning tracks represented by AMLGym"
+  },
+  "domains": [
+    "barman", "blocksworld", "childsnack", "depots", "elevators",
+    "ferry", "floortile", "goldminer", "grippers", "matchingbw",
+    "miconic", "nomystery", "npuzzle", "parking", "rovers", "satellite",
+    "sokoban", "spanner", "tpp", "transport"
+  ],
+  "learner_families": ["SAM", "OffLAM", "NOLAM", "ROSAME"],
+  "trace_budgets": [3, 10],
+  "nolam_noise": 0.0,
+  "predictive_sampling": {
+    "problems_per_domain": 2,
+    "states_per_problem": 12,
+    "ground_actions_per_operator_per_state": 4,
+    "repair_bucket": [0, 500],
+    "calibration_bucket": [500, 750],
+    "test_bucket": [750, 1000],
+    "bucket_hash": "sha256"
+  },
+  "dovod_repair": {
+    "max_action_local_features": 8,
+    "max_context_width": 1,
+    "edit_penalty": 0.25,
+    "false_allow_weight": 1.0,
+    "false_block_weight": 1.0
+  },
+  "metrics": [
+    "syntactic_precision", "syntactic_recall",
+    "heldout_applicability_risk", "heldout_false_allow_rate", "heldout_false_block_rate"
+  ],
+  "claim_boundary": "The contract is frozen before external outcomes are inspected. Unsupported or failed learner/domain combinations are retained as explicit statuses. The DOVOD layer repairs applicability decisions only; it does not rewrite the upstream PDDL model or claim effects/problem-solving improvements without separate evidence."
+}

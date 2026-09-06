@@ -1,0 +1,144 @@
+name: Q1 research validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/**'
+    paths:
+      - 'research/q1_2026/**'
+      - '.github/workflows/q1-research.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pytest -q
+      - run: python benchmarks/run_paper_a.py
+      - run: python benchmarks/run_paper_b.py
+      - run: python benchmarks/run_core.py
+      - run: python scripts/verify_release.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-core-results
+          path: |
+            research/q1_2026/results/*.json
+          if-no-files-found: error
+
+  bluebirds:
+    needs: core
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python benchmarks/run_paper_b_bluebirds.py
+      - name: Emit external validation artifact
+        run: cat results/paper_b_bluebirds_external.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-bluebirds-external
+          path: research/q1_2026/results/paper_b_bluebirds_external.json
+          if-no-files-found: error
+
+  amlgym:
+    needs: core
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+        trace_budget: [3, 10]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run prespecified AMLGym shard
+        run: >-
+          python benchmarks/run_amlgym_matrix.py
+          --algorithms '${{ matrix.algorithm }}'
+          --trace-budgets '${{ matrix.trace_budget }}'
+          --timeout-per-case 900
+          --output-dir 'artifacts/amlgym/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}'
+          --summary 'artifacts/amlgym/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}-summary.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amlgym-${{ matrix.algorithm }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/amlgym/**/*.json
+          if-no-files-found: warn
+
+  merge-amlgym:
+    if: always()
+    needs: [core, amlgym]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: amlgym-*
+          path: research/q1_2026/artifacts/amlgym-ci
+          merge-multiple: true
+      - name: Merge prespecified matrix
+        run: >-
+          python benchmarks/merge_amlgym_results.py
+          artifacts/amlgym-ci
+          --output results/paper_a_amlgym_matrix.json
+      - name: Assert matrix cell completeness
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('results/paper_a_amlgym_matrix.json')
+          d = json.loads(p.read_text())
+          if not d['complete_matrix']:
+              raise SystemExit(f"missing={d['missing_cells']} unexpected={d['unexpected_cells']}")
+          print(f"complete AMLGym matrix: {d['observed_case_count']} cells; ok={d['ok_count']}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-amlgym-matrix
+          path: research/q1_2026/results/paper_a_amlgym_matrix.json
+          if-no-files-found: error
