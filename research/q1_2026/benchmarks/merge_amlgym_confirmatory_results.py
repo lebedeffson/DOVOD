@@ -40,6 +40,32 @@ def load_cases(root: Path):
     return cases
 
 
+def account_missing_as_infrastructure_failures(unique, expected):
+    """Represent artifact loss explicitly instead of silently dropping a cell.
+
+    This is deliberately opt-in at the CLI. It is intended for a matrix in
+    which GitHub recorded an attempted job but the hosted runner shut down
+    before the artifact-upload step could execute. The synthesized record is a
+    failure outcome only; it contributes no scientific test metric.
+    """
+    accounted = dict(unique)
+    synthesized = []
+    for domain, algorithm, budget in sorted(expected - set(accounted)):
+        case = {
+            "schema": "dovod-q1-amlgym-confirmatory-case-v1",
+            "domain": domain,
+            "algorithm": algorithm,
+            "trace_budget": int(budget),
+            "status": "infrastructure_missing",
+            "failure_stage": "artifact_accounting",
+            "error": "No per-case artifact was available at merge time; retained as an infrastructure failure, never as scientific success or timeout.",
+            "_artifact_path": "<synthesized-infrastructure-failure>",
+        }
+        accounted[(domain, algorithm, int(budget))] = case
+        synthesized.append([domain, algorithm, int(budget)])
+    return accounted, synthesized
+
+
 def exact_domain_sign_test(domain_deltas):
     nonzero = [delta for delta in domain_deltas.values() if abs(delta) > 1e-15]
     wins = sum(delta > 0 for delta in nonzero)
@@ -60,6 +86,11 @@ def main() -> None:
     parser.add_argument("artifact_root")
     parser.add_argument("--contract", default=str(CONTRACT))
     parser.add_argument("--output", default=str(ROOT / "results" / "paper_a_amlgym_confirmatory_matrix.json"))
+    parser.add_argument(
+        "--account-missing-as-infrastructure-failures",
+        action="store_true",
+        help="Retain missing per-case artifacts as explicit infrastructure failures rather than dropping them.",
+    )
     args = parser.parse_args()
 
     contract = json.loads(Path(args.contract).read_text(encoding="utf-8"))
@@ -74,6 +105,11 @@ def main() -> None:
     duplicates = {key: rows for key, rows in by_key.items() if len(rows) > 1}
     unique = {key: rows[0] for key, rows in by_key.items() if len(rows) == 1}
     expected = expected_keys(contract)
+    raw_observed_case_count = len(unique)
+    synthesized_infrastructure_cells = []
+    if args.account_missing_as_infrastructure_failures and not duplicates:
+        unique, synthesized_infrastructure_cells = account_missing_as_infrastructure_failures(unique, expected)
+
     observed = set(unique)
     missing = sorted(expected - observed)
     unexpected = sorted(observed - expected)
@@ -158,12 +194,14 @@ def main() -> None:
     report = {
         "schema": "dovod-q1-amlgym-confirmatory-matrix-v1",
         "contract": contract,
-        "observed_case_count": len(unique),
+        "observed_case_count": raw_observed_case_count,
+        "accounted_case_count": len(unique),
         "raw_case_records": len(raw_cases),
         "expected_case_count": len(expected),
         "complete_execution": complete_execution,
         "protocol_clean": protocol_clean,
         "missing_cells": [list(x) for x in missing],
+        "synthesized_infrastructure_cells": synthesized_infrastructure_cells,
         "unexpected_cells": [list(x) for x in unexpected],
         "duplicate_cells": {"|".join(map(str, key)): [row.get("_artifact_path") for row in rows] for key, rows in duplicates.items()},
         "failed_or_timeout_count": len(failure_rows),
@@ -184,8 +222,9 @@ def main() -> None:
             "rows": scientific_rows,
         },
         "claim_boundary": (
-            "CI success depends only on execution completeness and protocol integrity, never on favorable scientific performance. "
-            "All improved, tied, worsened, failed, and timeout cells remain in the artifact. Broad statistical interpretation uses domain-level summaries."
+            "CI success depends only on complete accounting and protocol integrity, never on favorable scientific performance. "
+            "All improved, tied, worsened, learner-failed, timeout, and explicitly synthesized infrastructure-missing cells remain in the artifact. "
+            "An infrastructure-missing cell contributes no scientific metric and is never relabelled as a scientific timeout. Broad statistical interpretation uses domain-level summaries."
         ),
     }
 
