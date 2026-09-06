@@ -1,0 +1,39 @@
+name: Q1 AMLGym ROSAME n10 tail
+
+on:
+  push:
+    branches: [q1/full-rebuild-20260905]
+    paths: ['.github/workflows/q1-amlgym-rosame-n10-tail.yml']
+permissions:
+  contents: read
+jobs:
+  domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: [satellite, sokoban, spanner, tpp, transport]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+      DOMAIN: ${{ matrix.domain }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run frozen ROSAME n10 cell
+        run: |
+          mkdir -p artifacts/rosame-n10-tail
+          python benchmarks/run_amlgym_case.py --domain "$DOMAIN" --algorithm ROSAME --trace-budget 10 --output "artifacts/rosame-n10-tail/${DOMAIN}__ROSAME__n10.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rosame-n10-tail-${{ matrix.domain }}
+          path: research/q1_2026/artifacts/rosame-n10-tail/*.json
+          if-no-files-found: error
