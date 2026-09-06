@@ -1,0 +1,30 @@
+{
+  "schema": "dovod-short-papers-frozen-evidence-v12-snapshot",
+  "source_repository": "lebedeffson/DOVOD",
+  "source_ref": "main@aed82d667a4cf058fc32fb2a7fa131bb4b7a3cbb",
+  "source_path": "results/paper_claims_2026/frozen_evidence.json",
+  "source_blob_sha": "225177641d5f06769d525675cf782a3f44f1fce4",
+  "A": {
+    "candidate_relations": 272,
+    "meccano_refuted": 201,
+    "impact_refuted": 259,
+    "nested_before": 0.8707347636,
+    "nested_after": 0.8852784470,
+    "nested_gain": 0.0145436834,
+    "nested_pairs": 110,
+    "mean_pruned": 3.8545454545,
+    "nested_ci95": [0.0106327006, 0.0191601454],
+    "meccano_robust_one_carrier": 162,
+    "impact_robust_one_carrier": 184,
+    "rework_only_meccano": 16,
+    "rework_only_impact": 11,
+    "threshold1_recall": 0.9013079612,
+    "threshold2_recall": 0.7883626178,
+    "rarefaction_meccano_95": 9,
+    "rarefaction_impact_participant_95": 11,
+    "zero_fail_n9_upper95": 0.2831288356,
+    "zero_fail_n11_upper95": 0.2384041904,
+    "zero_fail_n_for_below_005": 59
+  },
+  "boundary": "Inherited frozen public evidence from the pre-existing short-paper line. Raw third-party data are not redistributed here; this snapshot is not a new raw-data recomputation."
+}
