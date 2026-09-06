@@ -1,0 +1,81 @@
+name: Q1 AMLGym ROSAME n10 parallel recovery
+
+on:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-amlgym-rosame10-parallel.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rosame10:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - barman
+          - blocksworld
+          - childsnack
+          - depots
+          - elevators
+          - ferry
+          - floortile
+          - goldminer
+          - grippers
+          - matchingbw
+          - miconic
+          - nomystery
+          - npuzzle
+          - parking
+          - rovers
+          - satellite
+          - sokoban
+          - spanner
+          - tpp
+          - transport
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run frozen ROSAME n10 confirmatory case
+        continue-on-error: true
+        run: >-
+          python benchmarks/run_amlgym_confirmatory_case.py
+          --domain '${{ matrix.domain }}'
+          --algorithm ROSAME
+          --trace-budget 10
+          --max-problems 2
+          --max-states 12
+          --pilot-states-per-problem 12
+          --max-actions-per-operator 4
+          --min-repair-samples 4
+          --max-features 8
+          --context-width 1
+          --edit-penalty 0.25
+          --false-allow-weight 1.0
+          --false-block-weight 1.0
+          --output 'artifacts/rosame10/${{ matrix.domain }}__rosame__n10.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rosame10-${{ matrix.domain }}
+          path: research/q1_2026/artifacts/rosame10/${{ matrix.domain }}__rosame__n10.json
+          if-no-files-found: error
