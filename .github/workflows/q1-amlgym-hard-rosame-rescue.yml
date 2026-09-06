@@ -41,25 +41,33 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
       - name: Run frozen hard ROSAME chunk
-        run: >-
-          python benchmarks/run_amlgym_matrix.py
-          --domains ${DOMAINS}
-          --algorithms ROSAME
-          --trace-budgets 1
-          --trajectory-kind learning_hard
-          --timeout-per-case 900
-          --output-dir "artifacts/hard-rosame-rescue/chunk-${CHUNK}"
-          --summary "artifacts/hard-rosame-rescue/chunk-${CHUNK}-summary.json"
+        run: |
+          mkdir -p "artifacts/hard-rosame-rescue/chunk-${CHUNK}"
+          cp benchmarks/run_amlgym_case.py /tmp/run_amlgym_hard_case.py
+          sed -i 's/get_trajectories_path(args.domain, kind="learning")/get_trajectories_path(args.domain, kind="learning_hard")/' /tmp/run_amlgym_hard_case.py
+          for domain in ${DOMAINS}; do
+            python /tmp/run_amlgym_hard_case.py \
+              --domain "$domain" \
+              --algorithm ROSAME \
+              --trace-budget 1 \
+              --output "artifacts/hard-rosame-rescue/chunk-${CHUNK}/${domain}__ROSAME__hard_n1.json" || true
+          done
       - name: Require all five case records
         run: |
           python - <<'PY'
           import json, os
           from pathlib import Path
-          p=Path('artifacts/hard-rosame-rescue')/f"chunk-{os.environ['CHUNK']}-summary.json"
-          d=json.loads(p.read_text())
-          if d.get('case_count') != 5:
-              raise SystemExit(json.dumps(d, indent=2))
-          print(json.dumps({k:d.get(k) for k in ['case_count','ok_count','decision_bridge_count','failed_or_timeout_count']}, indent=2))
+          root=Path('artifacts/hard-rosame-rescue')/f"chunk-{os.environ['CHUNK']}"
+          rows=[]
+          for p in sorted(root.glob('*.json')):
+              rows.append(json.loads(p.read_text()))
+          if len(rows) != 5:
+              raise SystemExit(f'expected 5 retained cells, got {len(rows)}')
+          ok=sum(r.get('status')=='ok' for r in rows)
+          decision=sum(r.get('status')=='ok' and isinstance(r.get('decision'),dict) for r in rows)
+          print(json.dumps({'case_count':len(rows),'ok_count':ok,'decision_bridge_count':decision},indent=2))
+          if decision <= 0:
+              raise SystemExit('vacuous hard ROSAME chunk')
           PY
       - uses: actions/upload-artifact@v4
         if: always()
