@@ -1,0 +1,41 @@
+name: Q1 Blue Birds direct validation
+
+on:
+  push:
+    branches:
+      - q1/full-rebuild-20260905
+    paths:
+      - '.github/workflows/q1-bluebirds-direct.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bluebirds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install validation dependencies
+        run: python -m pip install --upgrade pip numpy scipy
+      - name: Run pinned Blue Birds validation
+        run: python benchmarks/run_paper_b_bluebirds.py
+      - name: Emit result
+        if: always()
+        run: |
+          if [ -f results/paper_b_bluebirds_external.json ]; then
+            cat results/paper_b_bluebirds_external.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: q1-bluebirds-direct
+          path: research/q1_2026/results/paper_b_bluebirds_external.json
+          if-no-files-found: warn
