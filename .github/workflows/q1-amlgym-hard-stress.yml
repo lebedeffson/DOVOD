@@ -98,3 +98,5 @@ jobs:
           name: hard-${{ matrix.algorithm }}-n1
           path: research/q1_2026/artifacts/amlgym-hard/**/*.json
           if-no-files-found: warn
+
+# Trigger frozen hard-stress run after analysis contract was locked.
