@@ -23,13 +23,27 @@ The canonical workflow is `.github/workflows/q1-amlgym-confirmatory.yml`.
 
 It first runs a label-free preflight that replays the historically inspected pilot selector and proves zero semantic-state overlap before test labels are opened. Seven learner/budget combinations run as ordinary 20-domain shards. ROSAME with trace budget 10 is executed as 20 independent per-domain jobs because the sequential shard can exceed a hosted-runner wall-time limit. This changes orchestration only; every scientific argument and frozen split remains identical.
 
-The ROSAME/n=10 jobs use the original frozen 900-second per-case limit and always emit a case receipt. Thus a timeout or upstream failure remains one of the 160 outcomes rather than disappearing as a missing artifact. The merge step is outcome-agnostic: CI requires execution completeness and protocol integrity, never favorable scientific performance.
+The ROSAME/n=10 jobs use the original frozen 900-second per-case limit and emit a case receipt whenever the process remains under workflow control. Thus a normal timeout or upstream failure remains one of the 160 outcomes rather than disappearing as a missing artifact. A hosted-runner cancellation can still preempt the shell before a receipt is written; such infrastructure cancellation is not re-labelled as a scientific timeout.
 
-Canonical aggregate:
+The merge step is outcome-agnostic: CI requires execution completeness and protocol integrity, never favorable scientific performance.
+
+Canonical frozen aggregate:
 
 `results/paper_a_amlgym_confirmatory_matrix.json`
 
 The aggregate retains improved, tied, worsened, failed/timeout, and empty-test cells. Broad interpretation uses domain means and the exact domain-level sign test.
+
+### Post-freeze RNG reproducibility amendment
+
+A clean replay after the primary v4 run exposed an upstream reproducibility limitation: the DOVOD state/action selection and repair/calibration/test split are SHA-256 deterministic, but AMLGym learner execution was launched without an explicit process hash seed or common Python/NumPy/PyTorch RNG seed. Repeated learner executions can therefore produce different learned domains even when the scientific split and downstream DOVOD code are unchanged.
+
+This is not repaired retroactively by choosing a more favorable replay. The original frozen v4 aggregate remains the primary confirmatory result. The post-freeze reproducibility amendment pins:
+
+- `PYTHONHASHSEED=0` before the Python interpreter starts;
+- `DOVOD_CONFIRMATORY_SEED=20260906` for Python and NumPy via opt-in `sitecustomize.py`;
+- the same seed for PyTorch in ROSAME jobs.
+
+The amendment changes neither domains, trace budgets, state fingerprints, repair/calibration/test buckets, repair vocabulary, deployment gate, metrics, nor the 900-second scientific case limit. It is reported as a reproducibility diagnostic rather than silently substituted for the frozen primary analysis. Any amended scientific aggregate is compared with, rather than selected over, the primary aggregate.
 
 ## Blue Birds external validation
 
