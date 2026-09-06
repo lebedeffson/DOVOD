@@ -1,0 +1,43 @@
+name: Q1 AMLGym childsnack diagnostic
+
+on:
+  push:
+    branches:
+      - q1/full-rebuild-20260905
+    paths:
+      - '.github/workflows/q1-amlgym-childsnack-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip && python -m pip install 'amlgym==1.0.11'
+      - name: Run OffLAM childsnack with full traceback
+        run: |
+          python - <<'PY'
+          import traceback
+          from amlgym.algorithms import get_algorithm
+          from amlgym.benchmarks import get_domain_path, get_trajectories_path
+
+          domain = 'childsnack'
+          ref = get_domain_path(domain)
+          traces = get_trajectories_path(domain, kind='learning')[:3]
+          learner = get_algorithm('OffLAM')
+          print('reference=', ref)
+          print('traces=', traces)
+          try:
+              model = learner.learn(ref, traces)
+              print('LEARN_OK chars=', len(str(model)))
+          except Exception:
+              traceback.print_exc()
+              raise
+          PY
