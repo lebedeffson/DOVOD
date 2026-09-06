@@ -1,0 +1,68 @@
+name: Q1 AMLGym ROSAME n10 retry shards
+
+on:
+  push:
+    branches:
+      - q1/full-rebuild-20260905
+    paths:
+      - '.github/workflows/q1-amlgym-rosame-n10-retry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+      SHARD: ${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run five-domain ROSAME n10 shard
+        run: |
+          case "$SHARD" in
+            0) DOMAINS="barman blocksworld childsnack depots elevators" ;;
+            1) DOMAINS="ferry floortile goldminer grippers matchingbw" ;;
+            2) DOMAINS="miconic nomystery npuzzle parking rovers" ;;
+            3) DOMAINS="satellite sokoban spanner tpp transport" ;;
+          esac
+          python benchmarks/run_amlgym_matrix.py \
+            --domains $DOMAINS \
+            --algorithms ROSAME \
+            --trace-budgets 10 \
+            --timeout-per-case 900 \
+            --output-dir "artifacts/rosame-n10-retry/shard-${SHARD}" \
+            --summary "artifacts/rosame-n10-retry/shard-${SHARD}-summary.json"
+      - name: Reject vacuous shard
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p=Path('artifacts/rosame-n10-retry')/f"shard-{os.environ['SHARD']}-summary.json"
+          d=json.loads(p.read_text())
+          if d.get('case_count') != 5:
+              raise SystemExit(f"expected 5 cases, got {d.get('case_count')}")
+          if d.get('ok_count',0) <= 0:
+              raise SystemExit('vacuous shard')
+          print(json.dumps({k:d.get(k) for k in ['case_count','ok_count','decision_bridge_count','failed_or_timeout_count','improved_test_cases','tied_test_cases','worsened_test_cases','mean_test_risk_reduction']},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rosame-n10-retry-${{ matrix.shard }}
+          path: research/q1_2026/artifacts/rosame-n10-retry/**/*.json
+          if-no-files-found: warn
