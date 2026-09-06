@@ -23,6 +23,8 @@ jobs:
     defaults:
       run:
         working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,6 +40,24 @@ jobs:
           --timeout-per-case 900
           --output-dir 'artifacts/amlgym-full/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}'
           --summary 'artifacts/amlgym-full/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}-summary.json'
+      - name: Reject vacuous green shards
+        env:
+          ALGORITHM: ${{ matrix.algorithm }}
+          TRACE_BUDGET: ${{ matrix.trace_budget }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path('artifacts/amlgym-full') / f"{os.environ['ALGORITHM']}-n{os.environ['TRACE_BUDGET']}-summary.json"
+          d = json.loads(p.read_text())
+          if d.get('case_count') != 20:
+              raise SystemExit(f"expected 20 domain cells, got {d.get('case_count')}")
+          if d.get('ok_count', 0) <= 0:
+              raise SystemExit(f"vacuous shard: ok_count={d.get('ok_count')}")
+          if d.get('decision_bridge_count', 0) <= 0:
+              raise SystemExit(f"no predictive decision bridge succeeded: {d.get('decision_bridge_count')}")
+          print(json.dumps({k:d.get(k) for k in ['ok_count','failed_or_timeout_count','decision_bridge_count','improved_test_cases','tied_test_cases','worsened_test_cases','mean_test_risk_reduction']}, indent=2))
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:
