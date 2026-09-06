@@ -1,8 +1,8 @@
 # Reproducibility contract
 
-This directory is the working Q1 research release for two separate DOVOD papers. It is designed to be copied into `research/q1_2026/` of the parent DOVOD repository without modifying the frozen short-paper evidence on `main`.
+This directory is the working Q1 research release for two separate DOVOD papers. It lives on `q1/full-rebuild-20260905`; the frozen `main` baseline is not modified.
 
-## Local core
+## Local two-paper core
 
 Python 3.11+ is recommended.
 
@@ -11,31 +11,42 @@ python -m pip install -r requirements.txt
 make release
 ```
 
-`make release` runs the full unit suite, regenerates the Paper A controlled benchmark, the Paper B orientation/planning benchmark, the reconstructed core scaling benchmark, and finally checks the fixed regression values and claim boundaries.
+`make release` runs the complete unit suite and regenerates the controlled Paper A benchmark/stress verification, the Paper B exact/POMCP/practical reports, and the recovered exact count-DP core. The clean release currently contains 36 tests.
 
-The wall-clock timing values are machine-dependent. The exact reproducibility targets are values, actions, state counts, synthetic planted edits, theorem-formula checks, and provenance hashes, not absolute seconds.
+Wall-clock values are machine-dependent. Exact reproducibility targets are values, selected actions, state counts, planted-edit recovery, theorem/formula checks, deterministic splits, and provenance hashes rather than absolute seconds.
 
-## External AMLGym gate
+## AMLGym confirmatory matrix
 
-The external benchmark contract is frozen in `configs/amlgym_q1_contract.json` before external outcomes are read. It pins AMLGym 1.0.11, 20 IPC-derived domains, four learner families (SAM, OffLAM, NOLAM, ROSAME), two trace budgets, and a hash-defined repair/calibration/test split.
+The confirmatory contract is `configs/amlgym_q1_contract.json` (schema `dovod-q1-amlgym-contract-v4`). It pins AMLGym 1.0.11, 20 IPC-style domains, four learner families, two trace budgets, the semantic-state split, the repair vocabulary, and the calibration-only deployment gate.
 
-```bash
-python -m pip install -r requirements.txt -r requirements-amlgym.txt
-make amlgym-matrix
-```
+The canonical workflow is `.github/workflows/q1-amlgym-confirmatory.yml`.
 
-A single-domain smoke run is available as `make amlgym-smoke`. The parent repository workflow `.github/workflows/q1-research.yml` runs the full matrix in eight independent shards and merges all case JSON files while preserving failures and timeouts. A failed learner/domain cell is evidence about the protocol execution and must not be silently dropped.
+It first runs a label-free preflight that replays the historically inspected pilot selector and proves zero semantic-state overlap before test labels are opened. Seven learner/budget combinations run as ordinary 20-domain shards. ROSAME with trace budget 10 is executed as 20 independent per-domain jobs because the sequential shard can exceed a hosted-runner wall-time limit. This changes orchestration only; every scientific argument and frozen split remains identical.
 
-The DOVOD repair layer is evaluated only on action applicability. It does not alter learned PDDL effects and it must not be described as improving plan solving without a separate experiment.
+The ROSAME/n=10 jobs use the original frozen 900-second per-case limit and always emit a case receipt. Thus a timeout or upstream failure remains one of the 160 outcomes rather than disappearing as a missing artifact. The merge step is outcome-agnostic: CI requires execution completeness and protocol integrity, never favorable scientific performance.
 
-## External data boundary
+Canonical aggregate:
 
-The MECCANO/IMPACT numbers in `external_evidence/dovod_short_papers_v12.json` are a provenance-preserving snapshot of previously frozen DOVOD evidence. Raw third-party datasets are not redistributed in this package and those numbers are not presented as a fresh rerun.
+`results/paper_a_amlgym_confirmatory_matrix.json`
+
+The aggregate retains improved, tied, worsened, failed/timeout, and empty-test cells. Broad interpretation uses domain means and the exact domain-level sign test.
+
+## Blue Birds external validation
+
+`benchmarks/run_paper_b_bluebirds.py` pins `welinder/cubam` commit `fe5ba700f1adbb489c69af311558d64370d73d36` and deterministically hashes tasks into calibration/test partitions. Test ground truth is used only for evaluation.
+
+The external result supports calibration-based reliability selection on held-out tasks; naive orientation flipping is retained as a negative result. It is not a procedural-action benchmark and does not by itself validate the full Bellman planner.
+
+## Frozen procedural evidence boundary
+
+The MECCANO/IMPACT numbers in `external_evidence/dovod_short_papers_v12.json` are provenance-preserving snapshots of previously frozen DOVOD evidence. Raw third-party datasets are not redistributed here. The MECCANO source-acquisition study uses controlled perfect reveals and therefore does not empirically identify persistent source orientation/reliability.
 
 ## Integrity
 
-`MANIFEST.sha256` hashes every release source/document/result file except itself and ephemeral caches. Regenerate it with:
+The authoritative clean validation is Git + CI plus the generated evidence JSONs. `MANIFEST.sha256` is generated from a concrete release tree with:
 
 ```bash
 python scripts/build_manifest.py
 ```
+
+It must be regenerated whenever release files change rather than treated as an immutable source of truth.

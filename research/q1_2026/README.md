@@ -1,87 +1,69 @@
-# DOVOD Q1 research core — two-paper working release
+# DOVOD Q1 2026 research package
 
-This directory is the reproducible research branch built on top of the frozen DOVOD 2026 short-paper package. It contains **two separate journal-scale research lines**, their executable mathematical core, practical benchmark adapters, frozen empirical provenance, tests, and manuscript drafts.
+This branch contains two separate research tracks plus their reproducible implementation. The frozen `main` baseline is not modified.
 
-It is intentionally not the frozen public `main` package.
+## Paper A — decision-equivalent authorization repair
 
-## Paper A — identifiable decision repair
+Working title: **From Sequence Regularity to Action Authorization: Decision-Equivalent and Certified Repair of Learned Preconditions**.
 
-**Working title:** *Identifiability and Certified Contextual Repair of Learned Action Models for Decision Support*
+The paper asks which learned ordering restrictions should remain in the action-authorization surface. The implementation contains positive-only identifiability diagnostics, exact hitting-set analysis, contextual exception/guard repair, exact and soft finite-vocabulary MILPs, independent holdout certification, paired tests, finite-class bounds, and an external AMLGym confirmatory protocol.
 
-Implemented here:
+Controlled benchmark facts:
 
-- passive-positive prerequisite non-identifiability witness and finite version spaces;
-- exact minimum decision-equivalent prerequisite selection as minimum hitting set;
-- exact MILP and exhaustive-oracle regression;
-- mandatory / optional-optimal / redundant prerequisite classification;
-- bidirectional contextual repair: exceptions recover false blocks and guards suppress false allows;
-- exact soft MILP for finite vocabularies when external labels cannot be interpolated;
-- action-local, object-renaming-invariant contextual features for a learner-agnostic AMLGym applicability layer;
-- label-independent vocabulary freezing;
-- PAC-Bayes-kl sparse-repair risk certificate under an IID sampling statement and sample-independent prior/vocabulary;
-- controlled benchmark with exact recovery of the planted contextual model;
-- a frozen AMLGym 1.0.11 / 20-domain / SAM-OffLAM-NOLAM-ROSAME contract and executable matrix runner.
+- 128 frozen candidate edits over a 256-state support;
+- 640 training observations;
+- exact recovery of all three planted local edits;
+- complete-support repaired risk 0.0 vs 0.125 for both the upstream rule and the best global-deletion baseline;
+- independent holdout: 0/4096 errors, one-sided exact 95% upper risk 0.0007311;
+- paired exact p-value vs upstream: 3.73e-155;
+- stress at n=640 with 5% label corruption: mean support risk 0.0015625, max 0.0078125.
 
-## Paper B — identifiability-aware evidence acquisition
+External AMLGym validation uses a frozen v4 confirmatory design over 20 domains x 4 learner families x 2 trace budgets = 160 prespecified cells. Pilot states are replayed exactly and excluded by semantic fingerprint before confirmatory ranking. Repair, calibration, and test are split by a fixed SHA-256 bucket; test labels do not affect fitting or deployment gating. Failed learner/tool cells and empty held-out test subsets are retained rather than silently removed.
 
-**Working title:** *Identifiability-Aware Bayesian Evidence Acquisition with Persistent Source Reliability and Orientation*
+The canonical full-matrix result is stored in `results/paper_a_amlgym_confirmatory_matrix.json`: all 160 cells are present and the protocol is clean. 5 cells are retained as failures/timeouts; 80 successful cells have empty held-out test subsets; among 75 usable cells, 7 improve, 68 tie, and 0 worsen. Domain-level mean risk has 4 wins, 6 ties, and 0 losses (exact two-sided sign-test p=0.125). This is evidence for conservative selective deployment, not broad superiority across AMLGym.
 
-Implemented here:
+## Paper B — source-typed evidence acquisition
 
-- all-finite-sequence source-orientation non-identifiability theorem and exact mutual-information check;
-- closed-form calibration theorem: one known-truth calibration plus one direct query has Bayes error `2r(1-r)`;
-- persistent latent-reliability covariance/correlation identities;
-- a single static hidden-world model containing task state, semantic model, source reliability, and source orientation;
-- posterior-vector Bellman solver with explicit numerical cache canonicalization;
-- independent ordered-history Bellman oracle with no belief rounding and no history merging;
-- exact evidence-count sufficient-statistic DP;
-- exact count-state combinatorics: for `Q` binary queries and horizon `h`, at most `C(h+2Q, h)` evidence-count states;
-- POMCP-style independent approximate tree-search baseline validated against exact optimal-action sets;
-- a pinned external Blue Birds crowdsourcing calibration/source-selection protocol with gold labels and individual worker votes.
+Working title: **Source-Typed Information Acquisition for Procedural Action Decisions under Persistent Source Uncertainty**.
 
-## Current reproducible evidence
+The paper asks which evidence source should be acquired before acting when physical state, semantic rule uncertainty, and persistent source behavior are jointly uncertain. The implementation contains the orientation non-identifiability construction, calibration result, latent-reliability correlation analysis, exact static-world Bellman solvers, exact evidence-count DP, ordered-history and posterior-vector cross-checks, a POMCP-style baseline, and a procedural prerequisite-acquisition adapter.
 
-Run:
+Controlled/recovered-core facts:
+
+- count-DP exactly matches value and first action of both exact reference representations on all three 256-world / 9-query horizon-3 cases;
+- history-to-count state ratio: 4.642857;
+- mean count-vs-posterior-vector wall-clock speedup on the clean CI runner: about 8.51x;
+- horizons 4/5/6 visit exactly 7,315 / 33,649 / 134,596 count states, matching the combinatorial formula;
+- POMCP-style baseline chooses an exact-optimal root action in 5/5 controlled seeds; mean absolute value error 0.01307.
+
+Frozen procedural evidence contains 777 MECCANO episodes (187 mixed-source episodes): Bellman expected cost 1.6657369 vs 1.7379769 for the myopic comparator, relative reduction 4.1566%, with paired 95% interval for Bellman-minus-myopic cost [-0.0799234, -0.0655095]. This experiment uses controlled perfect reveals and does not empirically identify persistent source orientation.
+
+A separate Blue Birds held-out source-calibration experiment supports the narrower reliability-selection claim: top-5 calibration-selected sources obtain 0.90 test accuracy vs 0.75 for raw majority voting, paired bootstrap difference +0.15 with 95% interval [0.0625, 0.2375]. Naive orientation flipping reduces majority accuracy to 0.70; this negative result is retained and the stronger orientation heuristic is not claimed.
+
+## Reproducibility
+
+From `research/q1_2026`:
 
 ```bash
-python -m pytest -q
-python benchmarks/run_paper_a.py
-python benchmarks/run_paper_b.py
-python benchmarks/run_core.py
-python scripts/verify_release.py
+python -m pip install -r requirements.txt
+make release
 ```
 
-The current package has 40 unit/regression tests. The benchmark JSON files under `results/` are the canonical local evidence; runtime seconds are machine-dependent and should never be treated as theorem-level quantities.
+The two-paper release contains **36 tests** and regenerates Paper A controlled/stress verification, Paper B exact/POMCP/practical reports, and the recovered core benchmark. AMLGym requires `requirements-amlgym.txt` and is run separately because of its heavy external learner dependencies.
 
-The current recovered-core run confirms:
+Important files:
 
-- 3/3 H3 exact count-DP matches against the no-merge history oracle in both value and first action;
-- H3 median-of-three count-vs-posterior-vector runtime speedup about 8.22x in this runtime (7.79x–8.46x);
-- H3 state compression 6175 ordered histories -> 1330 evidence-count states;
-- H4/H5/H6 count states exactly 7315 / 33649 / 134596, matching the closed-form combinatorial count;
-- the count solver now uses per-instance Bellman memoization without retaining a redundant full posterior vector at every count state, eliminating the prior sequential-run memory pathology;
-- orientation model `MI(Y; O_1:6)=0` at `r=0.9` and calibration pre-cost risk gain `0.32`;
-- Paper A controlled contextual benchmark: 3 planted edits recovered exactly, zero error on 4096 independent certification draws, PAC-Bayes-kl upper risk about 0.00538;
-- Paper B POMCP validation: all five 20k-simulation runs choose an exact-optimal root action on the current oriented test problem; max absolute root-value error below 0.018.
+- `paper_a/` — decision-layer repair and certification;
+- `paper_b/` — source-aware acquisition and exact/approximate planning;
+- `benchmarks/run_paper_a.py`, `run_paper_a_stress.py`;
+- `benchmarks/run_paper_b.py`, `run_paper_b_practical.py`;
+- `benchmarks/run_core.py`;
+- `benchmarks/run_amlgym_confirmatory_case.py`;
+- `benchmarks/merge_amlgym_confirmatory_results.py`;
+- `configs/amlgym_q1_contract.json`;
+- `papers/PAPER_A_DRAFT.md`;
+- `papers/PAPER_B_DRAFT.md`.
 
-Historical 18–22x timing numbers from the lost runtime are **not current evidence** and are not used by this release.
+## Claim boundaries
 
-## Real-data provenance already retained
-
-`external_evidence/dovod_short_papers_v12.json` is a byte-for-value snapshot of the frozen public DOVOD v12 evidence at commit `aed82d667a4cf058fc32fb2a7fa131bb4b7a3cbb`. It carries the already established MECCANO/IMPACT and 777-episode source-aware short-paper evidence, but it is not presented as a fresh raw-data rerun.
-
-## Blue Birds external source-validation gate
-
-`configs/bluebirds_external_contract.json` pins the public Welinder *Blue Birds* crowd-label dataset to commit `fe5ba700...` and to exact ground-truth/label blob SHAs. The protocol freezes a hash-based task split before test outcomes are used, estimates each worker's persistent orientation/reliability from calibration tasks only, and evaluates held-out source-quality association plus calibration-selected top-k source sets against label-free hash-ranked references.
-
-The current local container is offline, so the external files are fetched only in the networked CI job. Until `results/paper_b_bluebirds_external.json` is produced and reviewed, the protocol is an implemented external gate rather than a numerical result. It validates real persistent source behavior, not the procedural-action domain and not the finite-world Bellman planner itself.
-
-## AMLGym external gate
-
-`configs/amlgym_q1_contract.json` freezes AMLGym `1.0.11`, 20 IPC-learning domains, four learner families, two trace budgets, hash-based repair/calibration/test roles, and the DOVOD post-hoc applicability-repair hyperparameters. The runner records failures and unsupported cells rather than silently dropping them.
-
-Local network access is not available in the current execution container, so the third-party package cannot be installed here. The GitHub workflow runs that external matrix in a networked CI environment. Until the complete matrix is produced and reviewed, **no broad AML improvement claim is made**.
-
-## Scientific boundary
-
-This repository is a strong reproducible **Q1-scale core**, not a declaration that either manuscript has already passed a Q1 journal release gate. The remaining empirical gates are explicitly tracked in `RECOVERY_STATUS.md` and the manuscript drafts. No mechanical-safety claim is inferred from observational procedure data, and no source prevalence/reliability claim is inferred from the synthetic hidden-world models.
+The two papers are complementary but not merged. Paper A repairs learned authorization restrictions. Paper B decides which evidence source to acquire when uncertainty remains. Synthetic mechanism validation, frozen procedural evidence, and external benchmark evidence are reported separately. No absence-of-counterexamples result is interpreted as proof of physical necessity, and no external improvement is generalized beyond the statistical unit supported by the confirmatory data.

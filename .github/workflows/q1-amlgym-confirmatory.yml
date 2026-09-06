@@ -28,6 +28,8 @@ jobs:
     defaults:
       run:
         working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -60,7 +62,7 @@ jobs:
           path: research/q1_2026/artifacts/confirmatory-protocol-preflight.json
           if-no-files-found: error
 
-  matrix:
+  standard_matrix:
     needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -69,6 +71,9 @@ jobs:
       matrix:
         algorithm: [SAM, OffLAM, NOLAM, ROSAME]
         trace_budget: [3, 10]
+        exclude:
+          - algorithm: ROSAME
+            trace_budget: 10
     defaults:
       run:
         working-directory: research/q1_2026
@@ -100,9 +105,100 @@ jobs:
           path: research/q1_2026/artifacts/amlgym-confirmatory/**/*.json
           if-no-files-found: error
 
+  rosame10:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - barman
+          - blocksworld
+          - childsnack
+          - depots
+          - elevators
+          - ferry
+          - floortile
+          - goldminer
+          - grippers
+          - matchingbw
+          - miconic
+          - nomystery
+          - npuzzle
+          - parking
+          - rovers
+          - satellite
+          - sokoban
+          - spanner
+          - tpp
+          - transport
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run frozen ROSAME n10 confirmatory case with receipt
+        shell: bash
+        run: |
+          set +e
+          out='artifacts/amlgym-confirmatory/ROSAME-n10/${{ matrix.domain }}__rosame__n10.json'
+          mkdir -p "$(dirname "$out")"
+          timeout 900s python benchmarks/run_amlgym_confirmatory_case.py \
+            --domain '${{ matrix.domain }}' \
+            --algorithm ROSAME \
+            --trace-budget 10 \
+            --max-problems 2 \
+            --max-states 12 \
+            --pilot-states-per-problem 12 \
+            --max-actions-per-operator 4 \
+            --min-repair-samples 4 \
+            --max-features 8 \
+            --context-width 1 \
+            --edit-penalty 0.25 \
+            --false-allow-weight 1.0 \
+            --false-block-weight 1.0 \
+            --output "$out"
+          rc=$?
+          if [ ! -f "$out" ]; then
+            DOMAIN='${{ matrix.domain }}' RC="$rc" OUT="$out" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          rc = int(os.environ['RC'])
+          receipt = {
+              'schema': 'dovod-q1-amlgym-confirmatory-case-v1',
+              'domain': os.environ['DOMAIN'],
+              'algorithm': 'ROSAME',
+              'trace_budget': 10,
+              'status': 'timeout' if rc == 124 else 'failed',
+              'failure_stage': 'external_case_process',
+              'error': f'process exit code {rc}; no case JSON produced',
+          }
+          Path(os.environ['OUT']).write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+          PY
+          fi
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: confirmatory-ROSAME-n10-${{ matrix.domain }}
+          path: research/q1_2026/artifacts/amlgym-confirmatory/ROSAME-n10/${{ matrix.domain }}__rosame__n10.json
+          if-no-files-found: error
+
   merge:
     if: always()
-    needs: [preflight, matrix]
+    needs: [preflight, standard_matrix, rosame10]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:

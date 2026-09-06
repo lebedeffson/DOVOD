@@ -1,0 +1,22 @@
+{
+  "schema": "dovod-q1-bluebirds-external-summary-v1",
+  "dataset": {
+    "name": "Blue Birds",
+    "source_repo": "welinder/cubam",
+    "source_commit": "fe5ba700f1adbb489c69af311558d64370d73d36",
+    "benchmark_script": "benchmarks/run_paper_b_bluebirds.py"
+  },
+  "heldout_source_selection": {
+    "selected_top_k": 5,
+    "calibration_selected_accuracy": 0.90,
+    "raw_all_worker_majority_accuracy": 0.75,
+    "paired_accuracy_difference": 0.15,
+    "paired_bootstrap_ci95": [0.0625, 0.2375]
+  },
+  "negative_result": {
+    "naive_orientation_corrected_majority_accuracy": 0.70,
+    "raw_majority_accuracy": 0.75,
+    "orientation_correction_gain": -0.05
+  },
+  "claim_boundary": "External held-out evidence supports calibration-based source reliability selection in this dataset. Naive orientation flipping is a negative result and is not used to claim empirical validation of the persistent-orientation model. The full deterministic benchmark script regenerates worker-level and bootstrap details from the pinned source commit."
+}

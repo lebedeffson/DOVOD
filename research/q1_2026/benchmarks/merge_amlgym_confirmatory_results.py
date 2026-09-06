@@ -31,15 +31,12 @@ def load_cases(root: Path):
             data = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
             continue
+        # CI shard artifacts contain both one JSON per case and a shard summary
+        # embedding those same cases. The per-case records are canonical; loading
+        # embedded summary copies would manufacture duplicates at merge time.
         if data.get("schema") == "dovod-q1-amlgym-confirmatory-case-v1":
             data["_artifact_path"] = str(path)
             cases.append(data)
-        elif data.get("schema") == "dovod-q1-amlgym-confirmatory-shard-v1":
-            for case in data.get("cases", []):
-                if case.get("schema") == "dovod-q1-amlgym-confirmatory-case-v1":
-                    copied = dict(case)
-                    copied["_artifact_path"] = str(path)
-                    cases.append(copied)
     return cases
 
 
@@ -98,16 +95,22 @@ def main() -> None:
         if protocol.get("stage") != "confirmatory":
             protocol_violations.append({"key": list(key), "reason": "wrong_stage"})
         if protocol.get("pilot_overlap_count") != 0:
-            protocol_violations.append({key": list(key), "reason": "pilot_overlap"})
+            protocol_violations.append({"key": list(key), "reason": "pilot_overlap"})
         if protocol.get("split_unit") != "semantic_state_fingerprint":
-            protocol_violations.append({key": list(key), "reason": "wrong_split_unit"})
+            protocol_violations.append({"key": list(key), "reason": "wrong_split_unit"})
 
         test = (case.get("decision") or {}).get("test") or {}
         base = test.get("base") or {}
         dovod = test.get("dovod") or {}
         global_baseline = test.get("global_override_gated") or {}
         if not base.get("n"):
-            scientific_rows.append({key": list(key), "test_n": int(base.get("n") or 0), "risk_reduction": None, "global_to_dovod_risk_reduction": None, "class_balanced_risk_reduction": None})
+            scientific_rows.append({
+                "key": list(key),
+                "test_n": int(base.get("n") or 0),
+                "risk_reduction": None,
+                "global_to_dovod_risk_reduction": None,
+                "class_balanced_risk_reduction": None,
+            })
             continue
         base_risk = float(base["risk"])
         dovod_risk = float(dovod["risk"])
@@ -168,6 +171,7 @@ def main() -> None:
         "protocol_violations": protocol_violations,
         "scientific_summary": {
             "usable_test_cells": len(usable),
+            "empty_test_cells": sum(row.get("test_n") == 0 for row in scientific_rows),
             "improved_cells": sum(row["risk_reduction"] > 0 for row in usable),
             "tied_cells": sum(abs(row["risk_reduction"]) <= 1e-15 for row in usable),
             "worsened_cells": sum(row["risk_reduction"] < 0 for row in usable),

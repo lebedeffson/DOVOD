@@ -1,91 +1,42 @@
-# DOVOD Q1 release status — 2026-09-05
+# Q1 2026 recovery and validation status
 
-## Executive status
+## Branch integrity
 
-Two separate research works now have executable theory, algorithms, tests, benchmark artifacts, and manuscript drafts.
+- Active research branch: `q1/full-rebuild-20260905`.
+- Frozen `main` baseline: `aed82d667a4cf058fc32fb2a7fa131bb4b7a3cbb`.
+- `main` is not modified by this work.
 
-- **Paper A:** method-complete at the recovered-core level; external AMLGym matrix is wired but must run in networked CI; authoritative real procedural labels remain an external scientific dependency.
-- **Paper B:** mathematical/exact-planning core is complete at the finite static-world level; internal POMCP validation is present; a pinned real crowd-source calibration benchmark is wired for networked CI. Domain-specific acquisition costs and an independent external POMDP-library cross-check remain external scientific dependencies.
+## Core release
 
-The frozen DOVOD `main` short-paper evidence is preserved separately and not overwritten.
+The final branch assembles the complete two-paper release:
 
-## What is reproducible now
+- 36-test suite (35 prior clean-core tests plus the confirmatory-merge regression); clean CI is the acceptance check;
+- Paper A controlled benchmark;
+- Paper A stress suite;
+- Paper A verifier/certificates;
+- Paper B exact-orientation regression and POMCP baseline;
+- Paper B practical source-selection cases;
+- recovered exact count-DP core.
 
-### Paper A
+## Paper A
 
-1. Positive-only non-identifiability: a prerequisite that is always true before observed successful executions cannot be proven necessary against a hypothesis class that also contains the model with that prerequisite removed.
-2. Finite labelled version-space enumeration and mandatory/excluded/ambiguous predicate classification.
-3. Minimum decision-equivalent prerequisite preservation = minimum hitting set.
-4. Exact SciPy MILP cross-checked against exhaustive search on small instances.
-5. Exact bidirectional contextual repair with exceptions and guards.
-6. Exact *soft* bidirectional repair with weighted label-error slack for external data that cannot be perfectly fit by a small frozen vocabulary.
-7. Learner-agnostic AMLGym applicability bridge using action-local state templates and a single upstream applicability bit.
-8. PAC-Bayes-kl sparse-mask certificate mechanics with a sample-independent product prior.
-9. Controlled benchmark: exact recovery of three planted contextual edits; zero error on 4096 independent certification draws; upper risk about 0.00538 at delta=0.05, rho=0.02.
-10. AMLGym 1.0.11 contract and 20-domain matrix runner for SAM, OffLAM, NOLAM and ROSAME.
+The synthetic mechanism is fully reproducible and certified. The external confirmatory protocol is AMLGym v4: 20 domains, four learner families, two trace budgets, 160 prespecified cells. The label-free preflight passes and proves zero semantic-state overlap with the historically inspected pilot selections before confirmatory test labels are used.
 
-### Paper B
+The original sequential ROSAME/n=10 shard exceeded hosted-runner wall time. It was recovered by executing the exact same frozen per-domain cases independently in parallel; no data split, model, gate, hyperparameter, or test-label rule changed. The original frozen per-case limit of 900 seconds is retained. The canonical aggregate contains 160/160 cells and is protocol clean: 5 failures/timeouts, 80 empty-test cells, and 75 usable cells. Among usable cells, 7 improve, 68 tie, and 0 worsen. The domain-level sign summary is 4 wins / 6 ties / 0 losses with exact two-sided p=0.125.
 
-1. Symmetric persistent source-orientation non-identifiability for every finite direct-response sequence.
-2. Direct mutual information exactly zero under the theorem assumptions.
-3. Closed-form known-truth calibration result: Bayes error `2r(1-r)` and pre-cost gain `2(r-1/2)^2`.
-4. Persistent latent reliability implies `Cov(C_i,C_j)=Var(R)` and positive repeated-evidence dependence when reliability is non-degenerate.
-5. Integrated finite hidden-world model containing physical state, semantic model, persistent reliability and persistent orientation.
-6. Numerical posterior-vector Bellman implementation with disclosed 12-digit cache canonicalization.
-7. Independent ordered-history Bellman oracle with no belief rounding and no history merging.
-8. Exact evidence-count Bellman DP. Under static conditional-independent query likelihoods, order is irrelevant and the count vector is sufficient.
-9. Exact state-count formula `C(h+2Q,h)` for the full evidence-count lattice with `Q` binary repeatable queries and horizon `h`.
-10. POMCP-style internal approximate planning baseline validated against exact root action values.
-11. Pinned Blue Birds external-source protocol: gold-task hash split, per-worker orientation/reliability calibration, held-out worker validation, and calibration-ranked top-k source selection.
+Known reproducible upstream failures are retained rather than repaired post hoc: OffLAM/childsnack fails with `KeyError: kitchen` at both budgets; NOLAM/childsnack fails in upstream PDDL parsing on `(xist ?param_1)` at both budgets. ROSAME/n=10 on sokoban exceeded the prespecified 900-second limit and is retained as a timeout.
 
-## Fresh local verification
+The external result therefore supports conservative selective deployment versus the upstream applicability decision; it does not establish broad superiority. Against the calibration-gated global-override baseline, the domain summary is 1 win / 8 ties / 1 loss (p=1.0), so no broad advantage over that baseline is claimed either.
 
-Canonical evidence is stored in JSON rather than copied into prose. As of the current run:
+## Paper B
 
-- `python -m pytest -q`: **40 passed**.
-- H3, three seeds: count DP = ordered-history oracle in value and first action on all cases.
-- Current runtime H3 speedup over the numerical posterior-vector implementation, using three fresh repetitions per solver/case and per-case medians: mean **8.22x**, range **7.79x–8.46x**.
-- H3 state compression: **6175 -> 1330** states, ratio 4.642857x.
-- H4: 7315 count states.
-- H5: 33649 count states.
-- H6: 134596 count states; value `0.3922438401236031`.
-- Count-DP memoization is per solver instance and stores Bellman values only; full posterior vectors are computed on visit and not retained per state. This removes the cross-instance/high-dimensional posterior-cache memory pathology found during release QA.
-- `r=0.9`: six-direct-observation MI = `0`; closed-form calibration gain = `0.32`.
-- Paper A synthetic certificate risk upper bound: `0.005383204915233359`.
-- Paper B POMCP: 5/5 exact-optimal first actions; max absolute value error `0.017696393853929182`.
+Exact count-DP, exact reference solvers, POMCP-style baseline, practical adapter, and frozen procedural evidence are restored and validated. External Blue Birds source calibration supports held-out reliability-based source selection (0.90 top-5 vs 0.75 raw majority; +0.15 paired bootstrap difference, 95% interval [0.0625, 0.2375]). Naive orientation correction is a retained negative result (0.70) and is not promoted into an empirical orientation claim.
 
-Timing is environment-specific. State counts, values, theorem identities and regression equivalence are the stronger reproducible quantities.
+## Manuscripts
 
-## Frozen public empirical evidence reused with provenance
+Two separate drafts are maintained:
 
-The package includes the public DOVOD v12 evidence snapshot from `lebedeffson/DOVOD@aed82d6...`:
+- `papers/PAPER_A_DRAFT.md` — authorization repair, certification, AMLGym confirmatory evidence;
+- `papers/PAPER_B_DRAFT.md` — source-typed acquisition, persistent source uncertainty, exact count-DP, procedural and Blue Birds evidence.
 
-- Paper A short-paper line: 201/272 MECCANO and 259/272 IMPACT direct refutations, held-recording calibration/robustness/rarefaction evidence.
-- Paper B short-paper line: 777 episodes, 187 mixed-uncertainty episodes, exact Bellman vs myopic cost evidence and reliability/cost stress results.
-
-Those figures are inherited evidence. Raw third-party media are not redistributed here, so they are not re-described as newly rerun results.
-
-## Historical evidence intentionally retired
-
-The earlier 18–22x H3 speedup belongs to a lost ephemeral runtime. It is provenance only. The current publication candidate must cite only the fresh benchmark artifact unless that historical runtime is independently recovered.
-
-## Remaining external gates before a strong journal submission
-
-### Paper A
-
-- Complete the frozen AMLGym matrix in a networked environment and retain all failed/unsupported cells.
-- Analyze domains as statistical units; add repeated trajectory-generation seeds where AMLGym exposes them without test leakage.
-- Compare against upstream learners under matched information assumptions and include negative results.
-- Obtain authoritative positive and negative procedural admissibility labels for the real-procedure claim; observational counterexamples alone cannot establish positive necessity.
-- If effects/problem-solving claims are added, implement and evaluate a PDDL-level repair rather than extrapolating from the current applicability-only decision layer.
-
-### Paper B
-
-- Execute and review the pinned Blue Birds external calibration/source-selection job; retain the exact source commit/blob provenance and the prespecified hash split.
-- Measure source acquisition costs and error modes on a domain closer to the target procedural/perception setting; Blue Birds provides real worker reliability/reference items but not deployment-specific costs.
-- Add an external POMDP implementation/library cross-check; the current POMCP is intentionally an independent in-package baseline, not an external implementation.
-- Validate the exact/count quotient on at least one external sequential evidence dataset where stationary order-exchangeability is empirically defensible.
-
-## Release interpretation
-
-The engineering/research package itself is now coherent and reproducible. The remaining items are not missing local code disguised as theory; they are external-data / third-party-runtime scientific gates. Until they land, use **Q1-scale core / journal working paper**, not **Q1-ready accepted result**.
+The joint system story is only architectural: learned candidate restrictions -> Paper A repair/certification -> residual uncertainty -> Paper B evidence acquisition -> act/review.

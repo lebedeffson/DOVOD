@@ -1,0 +1,89 @@
+{
+  "amlgym_version": "1.0.11",
+  "claim_boundary": "CI success depends only on execution completeness and protocol integrity, never on favorable scientific performance. All improved, tied, worsened, failed, and timeout cells remain in the artifact. Broad statistical interpretation uses domain-level summaries.",
+  "contract_schema": "dovod-q1-amlgym-contract-v4",
+  "execution": {
+    "complete_execution": true,
+    "empty_test_cells": 80,
+    "expected_case_count": 160,
+    "failed_or_timeout_count": 5,
+    "observed_case_count": 160,
+    "protocol_clean": true,
+    "usable_test_cells": 75
+  },
+  "failures": [
+    {
+      "error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 41, col 7 to line: 41, col 22",
+      "failure_stage": "confirmatory_case",
+      "key": ["childsnack", "NOLAM", 3],
+      "status": "failed"
+    },
+    {
+      "error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 41, col 7 to line: 41, col 22",
+      "failure_stage": "confirmatory_case",
+      "key": ["childsnack", "NOLAM", 10],
+      "status": "failed"
+    },
+    {
+      "error": "KeyError: 'kitchen'",
+      "failure_stage": "confirmatory_case",
+      "key": ["childsnack", "OffLAM", 3],
+      "status": "failed"
+    },
+    {
+      "error": "KeyError: 'kitchen'",
+      "failure_stage": "confirmatory_case",
+      "key": ["childsnack", "OffLAM", 10],
+      "status": "failed"
+    },
+    {
+      "error": "Prespecified confirmatory per-case timeout exceeded: 900 seconds. The original frozen v4 matrix used --timeout-per-case 900; a later GitHub process completion, if any, is not used for scientific evaluation.",
+      "failure_stage": "external_case_process",
+      "key": ["sokoban", "ROSAME", 10],
+      "status": "timeout"
+    }
+  ],
+  "frozen_on": "2026-09-06",
+  "full_matrix_regeneration": "benchmarks/merge_amlgym_confirmatory_results.py over the preserved per-case GitHub Actions artifacts",
+  "schema": "dovod-q1-amlgym-confirmatory-matrix-summary-v1",
+  "scientific_summary": {
+    "domain_mean_global_to_dovod_risk_reduction": {
+      "barman": -0.0017361111111111112,
+      "childsnack": 0.0,
+      "depots": 0.0,
+      "elevators": 0.0,
+      "floortile": 0.017857142857142856,
+      "npuzzle": 0.0,
+      "parking": 0.0,
+      "sokoban": 0.0,
+      "tpp": 0.0,
+      "transport": 0.0
+    },
+    "domain_mean_risk_reduction": {
+      "barman": 0.020833333333333336,
+      "childsnack": 0.0,
+      "depots": 0.0,
+      "elevators": 0.0,
+      "floortile": 0.017857142857142856,
+      "npuzzle": 0.0,
+      "parking": 0.03125,
+      "sokoban": 0.0,
+      "tpp": 0.0078125,
+      "transport": 0.0
+    },
+    "domain_sign_test": {"losses": 0, "ties": 6, "two_sided_p": 0.125, "wins": 4},
+    "empty_test_cells": 80,
+    "global_to_dovod_domain_sign_test": {"losses": 1, "ties": 8, "two_sided_p": 1.0, "wins": 1},
+    "improved_cells": 7,
+    "mean_cell_class_balanced_risk_reduction": 0.027695893497937732,
+    "mean_cell_risk_reduction": 0.008293650793650794,
+    "tied_cells": 68,
+    "usable_test_cells": 75,
+    "worsened_cells": 0
+  },
+  "source_runs": {
+    "confirmatory_v4_run_id": 34049550070,
+    "frozen_per_case_timeout_seconds": 900,
+    "rosame_n10_parallel_recovery_run_id": 34054742257
+  }
+}
