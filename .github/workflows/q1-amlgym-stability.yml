@@ -1,0 +1,56 @@
+name: Q1 AMLGym stability diagnostics
+
+on:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-amlgym-stability.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - algorithm: ROSAME
+            domain: rovers
+            trace_budget: 3
+          - algorithm: ROSAME
+            domain: depots
+            trace_budget: 3
+          - algorithm: SAM
+            domain: satellite
+            trace_budget: 3
+          - algorithm: NOLAM
+            domain: satellite
+            trace_budget: 3
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run post-primary split sensitivity
+        run: >-
+          python benchmarks/run_amlgym_split_stability.py
+          --domain '${{ matrix.domain }}'
+          --algorithm '${{ matrix.algorithm }}'
+          --trace-budget '${{ matrix.trace_budget }}'
+          --splits 20
+          --output 'artifacts/amlgym-stability/${{ matrix.algorithm }}-${{ matrix.domain }}-n${{ matrix.trace_budget }}.json'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stability-${{ matrix.algorithm }}-${{ matrix.domain }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/amlgym-stability/*.json
+          if-no-files-found: error
