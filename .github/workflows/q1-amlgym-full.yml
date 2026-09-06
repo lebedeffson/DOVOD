@@ -1,0 +1,46 @@
+name: Q1 AMLGym full matrix
+
+on:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-amlgym-full.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+        trace_budget: [3, 10]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run full frozen shard
+        run: >-
+          python benchmarks/run_amlgym_matrix.py
+          --algorithms '${{ matrix.algorithm }}'
+          --trace-budgets '${{ matrix.trace_budget }}'
+          --timeout-per-case 900
+          --output-dir 'artifacts/amlgym-full/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}'
+          --summary 'artifacts/amlgym-full/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}-summary.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-${{ matrix.algorithm }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/amlgym-full/**/*.json
+          if-no-files-found: warn
