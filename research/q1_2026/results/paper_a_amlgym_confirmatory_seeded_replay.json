@@ -1,0 +1,91 @@
+{
+  "schema": "dovod-q1-amlgym-seeded-replay-receipt-v1",
+  "analysis_status": "post-freeze reproducibility diagnostic; primary frozen v4 aggregate remains authoritative",
+  "source": {
+    "run_id": 34057517956,
+    "executable_sha": "d3ef17ee74ccb53acaf41075bfb1009b31ceb308",
+    "merge_artifact_id": 9996680148,
+    "merge_artifact_digest": "sha256:e75689c856fddf8c3a784ef6f8f6d9c8939b34a34b75c1a46eed7202a793d389",
+    "raw_per_case_artifacts": 159,
+    "expected_cells": 160
+  },
+  "rng_amendment": {
+    "PYTHONHASHSEED": "0",
+    "python_numpy_seed": 20260906,
+    "pytorch_seeded_for_rosame": true,
+    "frozen_scientific_case_limit_seconds": 900,
+    "changed_scientific_split_or_gate": false
+  },
+  "outcome_accounting": {
+    "accounted_cells": 160,
+    "protocol_clean": true,
+    "learner_failures": 4,
+    "infrastructure_failures": 1,
+    "infrastructure_cell": ["sokoban", "ROSAME", 10],
+    "infrastructure_failure_stage": "hosted_runner_shutdown",
+    "infrastructure_evidence": {
+      "case_step_started_utc": "2026-09-06T20:21:36.9016562Z",
+      "runner_shutdown_utc": "2026-09-06T20:34:08.4538039Z",
+      "elapsed_before_shutdown_seconds": 751.5521477,
+      "scientific_timeout_reached": false
+    },
+    "note": "The hosted-runner shutdown is retained as an infrastructure failure and is not relabelled as the frozen 900-second scientific timeout."
+  },
+  "scientific_summary": {
+    "usable_test_cells": 75,
+    "empty_test_cells": 80,
+    "improved_cells": 6,
+    "tied_cells": 69,
+    "worsened_cells": 0,
+    "mean_cell_risk_reduction": 0.007182539682539682,
+    "mean_cell_class_balanced_risk_reduction": 0.026833725046662375,
+    "domain_mean_risk_reduction": {
+      "barman": 0.018229166666666668,
+      "childsnack": 0.0,
+      "depots": 0.0,
+      "elevators": 0.0,
+      "floortile": 0.017857142857142856,
+      "npuzzle": 0.0,
+      "parking": 0.0,
+      "sokoban": 0.0,
+      "tpp": 0.03125,
+      "transport": 0.0
+    },
+    "domain_sign_test": {
+      "wins": 3,
+      "ties": 7,
+      "losses": 0,
+      "two_sided_p": 0.25
+    },
+    "domain_mean_global_to_dovod_risk_reduction": {
+      "barman": -0.0017361111111111112,
+      "childsnack": 0.0,
+      "depots": 0.0,
+      "elevators": 0.0,
+      "floortile": 0.017857142857142856,
+      "npuzzle": 0.0,
+      "parking": 0.0,
+      "sokoban": 0.0,
+      "tpp": 0.0,
+      "transport": 0.0
+    },
+    "global_to_dovod_domain_sign_test": {
+      "wins": 1,
+      "ties": 8,
+      "losses": 1,
+      "two_sided_p": 1.0
+    }
+  },
+  "primary_comparison": {
+    "primary_result_file": "paper_a_amlgym_confirmatory_matrix.json",
+    "primary_improved_tied_worsened": [7, 68, 0],
+    "seeded_improved_tied_worsened": [6, 69, 0],
+    "primary_domain_wins_ties_losses": [4, 6, 0],
+    "seeded_domain_wins_ties_losses": [3, 7, 0],
+    "primary_domain_sign_test_p": 0.125,
+    "seeded_domain_sign_test_p": 0.25,
+    "primary_mean_cell_risk_reduction": 0.008293650793650794,
+    "seeded_mean_cell_risk_reduction": 0.007182539682539682
+  },
+  "claim_boundary": "This receipt reports the seeded post-freeze replay without replacing the prespecified primary v4 analysis. The raw 159-case merged artifact is preserved in GitHub Actions under the source artifact id and digest above. The missing Sokoban case contributes no scientific metric and is retained only as an infrastructure failure."
+}
