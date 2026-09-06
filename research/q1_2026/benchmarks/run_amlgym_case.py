@@ -4,12 +4,14 @@ import argparse
 import json
 import os
 import platform
+import sys
 import tempfile
 import time
 from importlib.metadata import version as package_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from paper_a.amlgym_bridge import (  # noqa: E402
     DecisionObservation,
@@ -189,7 +191,7 @@ def run_case(args) -> dict:
                 }
                 for op, model in repairs.items()
             }
-        except Exception as exc:  # retain syntactic evidence even if predictive bridge is unsupported
+        except Exception as exc:
             decision = None
             repair_summary = None
             pred_error = f"{type(exc).__name__}: {exc}"
