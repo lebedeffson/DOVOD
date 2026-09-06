@@ -1,0 +1,100 @@
+name: Q1 AMLGym native hard stress
+
+on:
+  push:
+    branches:
+      - q1/full-rebuild-20260905
+    paths:
+      - '.github/workflows/q1-amlgym-hard-stress.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hard-stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONPATH: .
+      ALGORITHM: ${{ matrix.algorithm }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run frozen learning_hard n=1 domain matrix
+        run: |
+          mkdir -p artifacts/amlgym-hard/${ALGORITHM}-n1
+          cp benchmarks/run_amlgym_case.py /tmp/run_amlgym_hard_case.py
+          sed -i 's/get_trajectories_path(args.domain, kind="learning")/get_trajectories_path(args.domain, kind="learning_hard")/' /tmp/run_amlgym_hard_case.py
+          status=0
+          for domain in barman blocksworld childsnack depots elevators ferry floortile goldminer grippers matchingbw miconic nomystery npuzzle parking rovers satellite sokoban spanner tpp transport; do
+            echo "=== ${ALGORITHM} learning_hard ${domain} n=1 ==="
+            python /tmp/run_amlgym_hard_case.py \
+              --domain "$domain" \
+              --algorithm "$ALGORITHM" \
+              --trace-budget 1 \
+              --output "artifacts/amlgym-hard/${ALGORITHM}-n1/${domain}__${ALGORITHM}__hard_n1.json" || status=1
+          done
+          echo "individual_case_failure_seen=$status"
+      - name: Summarize hard stress without hiding failures
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          alg=os.environ['ALGORITHM']
+          root=Path('artifacts/amlgym-hard')/f'{alg}-n1'
+          rows=[json.loads(p.read_text()) for p in sorted(root.glob('*.json'))]
+          ok=[r for r in rows if r.get('status')=='ok']
+          decision=[r for r in ok if isinstance(r.get('decision'),dict)]
+          improved=tied=worsened=0
+          reductions=[]
+          prevented=0
+          missed=0
+          for r in decision:
+              t=r['decision']['test']
+              base=float(t['base']['risk']); gated=float(t['dovod']['risk']); ung=float(t['dovod_ungated']['risk'])
+              delta=base-gated; reductions.append(delta)
+              if delta>1e-12: improved+=1
+              elif delta<-1e-12: worsened+=1
+              else: tied+=1
+              if gated <= base+1e-12 and ung > base+1e-12: prevented+=1
+              if abs(gated-base)<=1e-12 and ung < base-1e-12: missed+=1
+          out={
+            'schema':'dovod-q1-amlgym-hard-stress-shard-v1',
+            'algorithm':alg,
+            'trajectory_kind':'learning_hard',
+            'trace_budget':1,
+            'case_count':len(rows),
+            'ok_count':len(ok),
+            'failed_count':len(rows)-len(ok),
+            'decision_bridge_count':len(decision),
+            'improved_test_cases':improved,
+            'tied_test_cases':tied,
+            'worsened_test_cases':worsened,
+            'mean_test_risk_reduction':sum(reductions)/len(reductions) if reductions else None,
+            'gate_prevented_ungated_harm_cells':prevented,
+            'gate_missed_ungated_benefit_cells':missed,
+          }
+          p=Path('artifacts/amlgym-hard')/f'{alg}-n1-summary.json'
+          p.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
+          print(json.dumps(out,indent=2,sort_keys=True))
+          if len(rows)!=20 or len(decision)<=0:
+              raise SystemExit('vacuous hard-stress shard')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hard-${{ matrix.algorithm }}-n1
+          path: research/q1_2026/artifacts/amlgym-hard/**/*.json
+          if-no-files-found: warn
