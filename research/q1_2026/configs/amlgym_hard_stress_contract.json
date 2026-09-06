@@ -1,0 +1,22 @@
+{
+  "schema": "dovod-q1-amlgym-hard-stress-v1",
+  "frozen_on": "2026-09-06",
+  "provenance": "Exploratory stress protocol frozen after inspecting the primary OffLAM n=3/n=10 shards, before any learning_hard outcome was run or inspected.",
+  "trajectory_kind": "learning_hard",
+  "domains": [
+    "barman", "blocksworld", "childsnack", "depots", "elevators",
+    "ferry", "floortile", "goldminer", "grippers", "matchingbw",
+    "miconic", "nomystery", "npuzzle", "parking", "rovers", "satellite",
+    "sokoban", "spanner", "tpp", "transport"
+  ],
+  "learner_families": ["SAM", "OffLAM", "NOLAM", "ROSAME"],
+  "trace_budgets": [1],
+  "evaluation": "Use the same hash-frozen predictive-power repair/calibration/test state-action split as the primary AMLGym contract.",
+  "repair_hyperparameters": "Reuse the primary frozen repair settings without tuning on learning_hard outcomes.",
+  "primary_stress_questions": [
+    "Does low-data hard-trajectory learning create enough held-out applicability error to test non-trivial repair?",
+    "How often does the independent calibration gate prevent harmful non-empty repairs?",
+    "When non-empty repair is deployed, does held-out applicability risk improve, tie, or worsen relative to the upstream learner?"
+  ],
+  "claim_boundary": "This is an exploratory post-primary stress extension, not a preregistered primary endpoint. It uses AMLGym's packaged learning_hard trajectories rather than synthetic corruption of learned PDDL."
+}
