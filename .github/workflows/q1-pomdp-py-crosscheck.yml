@@ -1,5 +1,6 @@
 name: Q1 pomdp_py exact cross-check
 
+# Independent external-library validation of the finite orientation case.
 on:
   push:
     branches:
