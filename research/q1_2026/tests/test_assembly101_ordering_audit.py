@@ -10,6 +10,11 @@ def test_toy_id_parser_matches_official_filename_shape():
     assert toy_id_from_name(name) == "c09c"
 
 
+def test_toy_id_parser_tolerates_mismatched_session_ids_in_official_filename():
+    name = "nusar-2021_action_both_9065-a17_9095_user_id_2021-02-17_114124.csv"
+    assert toy_id_from_name(name) == "a17"
+
+
 def test_high_frequency_relation_can_be_refuted_by_heldout_correct_event_and_detect_order_mistake():
     predecessor = ev("attach", "wheel", "chassis")
     target = ev("attach", "body", "chassis")

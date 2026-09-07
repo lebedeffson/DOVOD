@@ -55,14 +55,44 @@ jobs:
           name: assembly101-error-${{ steps.audit.outputs.code }}-${{ steps.audit.outputs.diag }}
           path: assembly101-audit.log
           if-no-files-found: error
-      - name: Emit compact evidence receipt
+      - name: Build compact evidence receipt
+        id: receipt
         if: steps.audit.outputs.code == '0'
-        run: >-
-          python -c "import json; p='research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json'; d=json.load(open(p)); t=f'{d[\"primary_threshold\"]:.2f}'; r=d['primary_sequence_split']['thresholds'][t]; print('ASSEMBLY101_V5_RESULT='+json.dumps({'sequences':d['sequence_count'],'events':d['event_count'],'threshold':t,'candidate_relations':r['candidate_relations'],'correct_eligible':r['correct_eligible'],'correct_violations':r['correct_violations'],'order_mistake_eligible':r['order_mistake_eligible'],'order_mistake_violations':r['order_mistake_violations'],'refuted_relations':r['relations_refuted_by_heldout_correct_behavior']},sort_keys=True))"
-      - uses: actions/upload-artifact@v4
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          p = 'research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json'
+          d = json.load(open(p, encoding='utf-8'))
+          t = f'{d["primary_threshold"]:.2f}'
+          r = d['primary_sequence_split']['thresholds'][t]
+          receipt = {
+              'sequences': d['sequence_count'],
+              'events': d['event_count'],
+              'threshold': t,
+              'candidate_relations': r['candidate_relations'],
+              'correct_eligible': r['correct_eligible'],
+              'correct_violations': r['correct_violations'],
+              'order_mistake_eligible': r['order_mistake_eligible'],
+              'order_mistake_violations': r['order_mistake_violations'],
+              'refuted_relations': r['relations_refuted_by_heldout_correct_behavior'],
+          }
+          tag = (
+              f"seq{receipt['sequences']}-ev{receipt['events']}-rel{receipt['candidate_relations']}"
+              f"-ce{receipt['correct_eligible']}-cv{receipt['correct_violations']}"
+              f"-oe{receipt['order_mistake_eligible']}-ov{receipt['order_mistake_violations']}"
+              f"-ref{receipt['refuted_relations']}"
+          )
+          print('ASSEMBLY101_V5_RESULT=' + json.dumps(receipt, sort_keys=True))
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              handle.write(f'tag={tag}\n')
+          PY
+      - name: Upload audit evidence
         if: steps.audit.outputs.code == '0'
+        uses: actions/upload-artifact@v4
         with:
-          name: paper-a-assembly101-ordering-audit-v5
+          name: paper-a-assembly101-v5-${{ steps.receipt.outputs.tag }}
           path: research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json
           if-no-files-found: error
       - name: Fail on audit execution error

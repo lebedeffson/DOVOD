@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-TOY_RE = re.compile(r"_(\d+)-([A-Za-z0-9]+)_\1_user_id_")
+TOY_RE = re.compile(r"_action_both_[^_]+-([A-Za-z0-9]+)_[^_]+_user_id_")
 
 
 @dataclass(frozen=True)
@@ -40,7 +40,7 @@ def toy_id_from_name(name: str) -> str:
     match = TOY_RE.search(name)
     if not match:
         raise ValueError(f"cannot parse toy id from {name}")
-    return match.group(2).lower()
+    return match.group(1).lower()
 
 
 def read_sequence(path: Path) -> tuple[Event, ...]:
