@@ -230,7 +230,7 @@ jobs:
         run: >-
           python benchmarks/merge_amlgym_confirmatory_results.py
           artifacts/amlgym-confirmatory-ci
-          --account-missing-as-infrastructure-failures
+          --allow-infrastructure-missing-cell 'sokoban|ROSAME|10'
           --output results/paper_a_amlgym_confirmatory_matrix.json
       - name: Emit scientific result without outcome-based CI filtering
         run: |
