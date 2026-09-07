@@ -8,6 +8,7 @@ on:
     paths:
       - '.github/workflows/q1-v5-strengthening.yml'
       - 'research/q1_2026/benchmarks/run_paper_a_multiaction16.py'
+      - 'research/q1_2026/benchmarks/run_paper_a_review_queue_sensitivity.py'
       - 'research/q1_2026/benchmarks/run_paper_b_noise_h10.py'
       - 'research/q1_2026/tests/test_paper_a_multiaction16.py'
       - 'research/q1_2026/paper_a/**'
@@ -33,7 +34,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
       - run: python -m pytest -q tests/test_core.py tests/test_deployment_protocol.py tests/test_paper_a_multiaction16.py
-      - run: python -m py_compile benchmarks/run_paper_a_multiaction16.py benchmarks/run_paper_b_noise_h10.py
+      - run: python -m py_compile benchmarks/run_paper_a_multiaction16.py benchmarks/run_paper_a_review_queue_sensitivity.py benchmarks/run_paper_b_noise_h10.py
 
   paper_a_multiaction16:
     needs: core_tests
@@ -53,10 +54,14 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - name: Run 16-bit two-action controlled benchmark
         run: python benchmarks/run_paper_a_multiaction16.py
+      - name: Run audit review-time sensitivity
+        run: python benchmarks/run_paper_a_review_queue_sensitivity.py
       - uses: actions/upload-artifact@v4
         with:
-          name: paper-a-multiaction16
-          path: research/q1_2026/results/paper_a_multiaction16.json
+          name: paper-a-v5-strengthening
+          path: |
+            research/q1_2026/results/paper_a_multiaction16.json
+            research/q1_2026/results/paper_a_review_queue_sensitivity.json
           if-no-files-found: error
 
   paper_b_noise_h10:
