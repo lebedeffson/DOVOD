@@ -1,0 +1,207 @@
+{
+  "artifact_digest": "sha256:74c4ca93d3f59a6c34bdc7ebe04e4fa56f7c9e99910f96e56d9499995d51601e",
+  "artifact_id": 10016902244,
+  "claim_boundary": "Post-reviewer explanatory analysis over the existing frozen MECCANO perfect-reveal acquisition model. It characterizes where Bellman-vs-myopic expected-cost gains concentrate; it does not create new sensor-cost evidence or measured industrial latency. All semantic-cost settings are reported, including settings where gains are negligible or zero.",
+  "frozen_cost1_correspondence": {
+    "mean_myopic_minus_bellman": 0.07223994887371307,
+    "note": "This equals the preserved Bellman-vs-myopic mean-cost difference 1.7379769 - 1.6657369 within rounding."
+  },
+  "head_sha": "5fab1c8ba1a9108a0e2f7b70e8d7adf98114804c",
+  "mask_k_strata": [
+    {
+      "episodes": 49,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 1,
+      "mean_gain": 0.0,
+      "positive_gain_fraction": 0.0,
+      "semantic_cost": 1.0
+    },
+    {
+      "episodes": 68,
+      "first_intervention_disagreement_fraction": 0.35294117647058826,
+      "mask_k": 2,
+      "mean_gain": 0.09114960587087516,
+      "positive_gain_fraction": 0.35294117647058826,
+      "semantic_cost": 1.0
+    },
+    {
+      "episodes": 70,
+      "first_intervention_disagreement_fraction": 0.014285714285714285,
+      "mask_k": 3,
+      "mean_gain": 0.10443853200235476,
+      "positive_gain_fraction": 0.8571428571428571,
+      "semantic_cost": 1.0
+    },
+    {
+      "episodes": 49,
+      "first_intervention_disagreement_fraction": 0.061224489795918366,
+      "mask_k": 1,
+      "mean_gain": 0.006254114549020405,
+      "positive_gain_fraction": 0.061224489795918366,
+      "semantic_cost": 2.0
+    },
+    {
+      "episodes": 68,
+      "first_intervention_disagreement_fraction": 0.04411764705882353,
+      "mask_k": 2,
+      "mean_gain": 0.00702648385053648,
+      "positive_gain_fraction": 0.10294117647058823,
+      "semantic_cost": 2.0
+    },
+    {
+      "episodes": 70,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 3,
+      "mean_gain": 0.003139615156656068,
+      "positive_gain_fraction": 0.11428571428571428,
+      "semantic_cost": 2.0
+    },
+    {
+      "episodes": 49,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 1,
+      "mean_gain": 0.0,
+      "positive_gain_fraction": 0.0,
+      "semantic_cost": 5.0
+    },
+    {
+      "episodes": 68,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 2,
+      "mean_gain": 0.0,
+      "positive_gain_fraction": 0.0,
+      "semantic_cost": 5.0
+    },
+    {
+      "episodes": 70,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 3,
+      "mean_gain": 0.0,
+      "positive_gain_fraction": 0.0,
+      "semantic_cost": 5.0
+    },
+    {
+      "episodes": 49,
+      "first_intervention_disagreement_fraction": 0.02040816326530612,
+      "mask_k": 1,
+      "mean_gain": 0.0029624753126530775,
+      "positive_gain_fraction": 0.02040816326530612,
+      "semantic_cost": 10.0
+    },
+    {
+      "episodes": 68,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 2,
+      "mean_gain": 0.010646844585772612,
+      "positive_gain_fraction": 0.07352941176470588,
+      "semantic_cost": 10.0
+    },
+    {
+      "episodes": 70,
+      "first_intervention_disagreement_fraction": 0.0,
+      "mask_k": 3,
+      "mean_gain": 0.0065152706713097,
+      "positive_gain_fraction": 0.12857142857142856,
+      "semantic_cost": 10.0
+    }
+  ],
+  "mixed_uncertainty_episodes": 187,
+  "schema": "dovod-paper-b-meccano-gain-summary-v4",
+  "semantic_costs": [
+    1.0,
+    2.0,
+    5.0,
+    10.0
+  ],
+  "source_run_id": 34117606357,
+  "summaries": [
+    {
+      "episodes": 187,
+      "exact_tie_fraction": 0.5508021390374331,
+      "first_intervention_disagreement_fraction": 0.13368983957219252,
+      "gain_quantiles": {
+        "q00": 0.0,
+        "q100": 0.38235634177356737,
+        "q25": 0.0,
+        "q50": 0.0,
+        "q75": 0.12099291732416595,
+        "q90": 0.2528616024976498,
+        "q95": 0.2528616024976498
+      },
+      "mean_gain": 0.07223994887371307,
+      "mean_gain_when_first_intervention_agrees": 0.04276753640982263,
+      "mean_gain_when_first_intervention_differs": 0.2632211816397232,
+      "positive_gain_fraction": 0.44919786096256686,
+      "recordings": 7,
+      "semantic_cost": 1.0,
+      "top_10pct_share_of_positive_gain": 0.3748174170984154,
+      "top_20pct_share_of_positive_gain": 0.6151701169003075
+    },
+    {
+      "episodes": 187,
+      "exact_tie_fraction": 0.9037433155080213,
+      "first_intervention_disagreement_fraction": 0.03208556149732621,
+      "gain_quantiles": {
+        "q00": 0.0,
+        "q100": 0.10215053763399995,
+        "q25": 0.0,
+        "q50": 0.0,
+        "q75": 0.0,
+        "q90": 0.0,
+        "q95": 0.04173892935586565
+      },
+      "mean_gain": 0.005369120725692006,
+      "mean_gain_when_first_intervention_agrees": 0.0021608969607757283,
+      "mean_gain_when_first_intervention_differs": 0.10215053763399973,
+      "positive_gain_fraction": 0.0962566844919786,
+      "recordings": 7,
+      "semantic_cost": 2.0,
+      "top_10pct_share_of_positive_gain": 1.0,
+      "top_20pct_share_of_positive_gain": 1.0
+    },
+    {
+      "episodes": 187,
+      "exact_tie_fraction": 1.0,
+      "first_intervention_disagreement_fraction": 0.0,
+      "gain_quantiles": {
+        "q00": 0.0,
+        "q100": 0.0,
+       "q25": 0.0,
+        "q50": 0.0,
+       "q75": 0.0,
+        "q90": 0.0,
+       "q95": 0.0
+      },
+      "mean_gain": 0.0,
+      "mean_gain_when_first_intervention_agrees": 0.0,
+      "mean_gain_when_first_intervention_differs": null,
+      "positive_gain_fraction": 0.0,
+      "recordings": 7,
+      "semantic_cost": 5.0,
+      "top_10pct_share_of_positive_gain": null,
+      "top_20pct_share_of_positive_gain": null
+    },
+    {
+      "episodes": 187,
+      "exact_tie_fraction": 0.9197860962566845,
+      "first_intervention_disagreement_fraction": 0.0053475935828877,
+      "gain_quantiles": {
+        "q00": 0.0,
+        "q100": 0.16597294484708236,
+        "q25": 0.0,
+        "q50": 0.0,
+        "q75": 0.0,
+        "q90": 0.0,
+       "q95": 0.037477761739680204
+      },
+      "mean_gain": 0.007086714808257847,
+      "mean_gain_when_first_intervention_agrees": 0.006344378380775358,
+      "mean_gain_when_first_intervention_differs": 0.1451612903200008,
+      "positive_gain_fraction": 0.08021390374331551,
+      "recordings": 7,
+      "semantic_cost": 10.0,
+      "top_10pct_share_of_positive_gain": 1.0,
+      "top_20pct_share_of_positive_gain": 1.0
+    }
+  ]
+}
