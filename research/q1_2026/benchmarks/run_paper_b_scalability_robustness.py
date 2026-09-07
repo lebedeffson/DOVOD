@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from math import isfinite
 from pathlib import Path
 from random import Random
@@ -9,6 +10,7 @@ from time import perf_counter
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 from paper_b.count_dp import EvidenceCountDP, evidence_count_state_count, ordered_history_state_count
 from paper_b.pomcp import StaticWorldPOMCP
