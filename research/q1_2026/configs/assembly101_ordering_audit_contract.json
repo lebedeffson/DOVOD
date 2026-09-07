@@ -5,8 +5,11 @@
     "repository": "assembly-101/assembly101-mistake-detection",
     "commit": "6f3a953267ffb86cdeabf6751af05a75a011a4f8",
     "annotation_glob": "annots/*.csv",
-    "expected_sequence_count": 328,
-    "license": "CC BY-NC 4.0"
+    "license": "CC BY-NC 4.0",
+    "readme_reported_sequence_count": 328,
+    "snapshot_annotation_file_count": 310,
+    "count_note": "The pinned public annotation repository README reports 328 sequences, while the pinned commit exposes 310 CSV annotation files under annots/. The audit operates on and integrity-checks the actual pinned snapshot.",
+    "expected_sequence_count": 310
   },
   "action_token": "lowercased verb|this-object|that-object",
   "induction": {
