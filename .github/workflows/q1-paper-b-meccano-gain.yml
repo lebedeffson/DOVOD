@@ -23,6 +23,17 @@ jobs:
       PYTHONHASHSEED: '0'
     steps:
       - uses: actions/checkout@v4
+      - name: Checkout pinned MECCANO PSR annotations
+        uses: actions/checkout@v4
+        with:
+          repository: TimSchoonbeek/PSR-annotations
+          ref: b75a230f61f7cd2575fcf6f171bbb320b73c41be
+          path: external/meccano-psr
+      - name: Stage PSR annotation archive at reference path
+        run: |
+          mkdir -p data/external
+          cp external/meccano-psr/MECCANO_PSR_Annotations.zip data/external/MECCANO_PSR_Annotations.zip
+          test -s data/external/MECCANO_PSR_Annotations.zip
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
