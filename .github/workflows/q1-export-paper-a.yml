@@ -1,0 +1,23 @@
+name: Q1 export Paper A source
+
+on:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-export-paper-a.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper-a-source-${{ github.sha }}
+          path: research/q1_2026/papers/PAPER_A_DRAFT.md
+          if-no-files-found: error
