@@ -24,6 +24,18 @@ def expected_keys(contract):
     }
 
 
+def parse_infrastructure_cell(value: str):
+    parts = value.split("|")
+    if len(parts) != 3:
+        raise argparse.ArgumentTypeError("infrastructure cell must be DOMAIN|ALGORITHM|TRACE_BUDGET")
+    domain, algorithm, budget = parts
+    try:
+        budget_int = int(budget)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("TRACE_BUDGET must be an integer") from exc
+    return (domain, algorithm, budget_int)
+
+
 def load_cases(root: Path):
     cases = []
     for path in sorted(root.rglob("*.json")):
@@ -40,17 +52,22 @@ def load_cases(root: Path):
     return cases
 
 
-def account_missing_as_infrastructure_failures(unique, expected):
-    """Represent artifact loss explicitly instead of silently dropping a cell.
+def account_missing_as_infrastructure_failures(unique, expected, allowlisted_missing):
+    """Account only explicitly allowlisted artifact loss as infrastructure failure.
 
-    This is deliberately opt-in at the CLI. It is intended for a matrix in
-    which GitHub recorded an attempted job but the hosted runner shut down
-    before the artifact-upload step could execute. The synthesized record is a
-    failure outcome only; it contributes no scientific test metric.
+    This never turns an arbitrary missing cell into a successful execution. A
+    missing cell must be named explicitly by DOMAIN|ALGORITHM|TRACE_BUDGET and
+    must exist in the frozen contract. Any other missing cell remains missing
+    and keeps the merge red.
     """
+    invalid = sorted(set(allowlisted_missing) - set(expected))
+    if invalid:
+        raise ValueError(f"allowlisted infrastructure cell(s) not present in the frozen contract: {invalid}")
+
     accounted = dict(unique)
     synthesized = []
-    for domain, algorithm, budget in sorted(expected - set(accounted)):
+    missing = expected - set(accounted)
+    for domain, algorithm, budget in sorted(missing.intersection(allowlisted_missing)):
         case = {
             "schema": "dovod-q1-amlgym-confirmatory-case-v1",
             "domain": domain,
@@ -58,7 +75,10 @@ def account_missing_as_infrastructure_failures(unique, expected):
             "trace_budget": int(budget),
             "status": "infrastructure_missing",
             "failure_stage": "artifact_accounting",
-            "error": "No per-case artifact was available at merge time; retained as an infrastructure failure, never as scientific success or timeout.",
+            "error": (
+                "No per-case artifact was available at merge time for this explicitly allowlisted hosted-runner failure; "
+                "retained as an infrastructure failure, never as scientific success or timeout."
+            ),
             "_artifact_path": "<synthesized-infrastructure-failure>",
         }
         accounted[(domain, algorithm, int(budget))] = case
@@ -87,9 +107,15 @@ def main() -> None:
     parser.add_argument("--contract", default=str(CONTRACT))
     parser.add_argument("--output", default=str(ROOT / "results" / "paper_a_amlgym_confirmatory_matrix.json"))
     parser.add_argument(
-        "--account-missing-as-infrastructure-failures",
-        action="store_true",
-        help="Retain missing per-case artifacts as explicit infrastructure failures rather than dropping them.",
+        "--allow-infrastructure-missing-cell",
+        action="append",
+        default=[],
+        type=parse_infrastructure_cell,
+        metavar="DOMAIN|ALGORITHM|TRACE_BUDGET",
+        help=(
+            "Explicitly account this one missing artifact as an infrastructure failure. "
+            "May be repeated; all other missing cells remain fatal."
+        ),
     )
     args = parser.parse_args()
 
@@ -107,8 +133,15 @@ def main() -> None:
     expected = expected_keys(contract)
     raw_observed_case_count = len(unique)
     synthesized_infrastructure_cells = []
-    if args.account_missing_as_infrastructure_failures and not duplicates:
-        unique, synthesized_infrastructure_cells = account_missing_as_infrastructure_failures(unique, expected)
+    if args.allow_infrastructure_missing_cell and not duplicates:
+        try:
+            unique, synthesized_infrastructure_cells = account_missing_as_infrastructure_failures(
+                unique,
+                expected,
+                set(args.allow_infrastructure_missing_cell),
+            )
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
 
     observed = set(unique)
     missing = sorted(expected - observed)
@@ -223,8 +256,9 @@ def main() -> None:
         },
         "claim_boundary": (
             "CI success depends only on complete accounting and protocol integrity, never on favorable scientific performance. "
-            "All improved, tied, worsened, learner-failed, timeout, and explicitly synthesized infrastructure-missing cells remain in the artifact. "
-            "An infrastructure-missing cell contributes no scientific metric and is never relabelled as a scientific timeout. Broad statistical interpretation uses domain-level summaries."
+            "All improved, tied, worsened, learner-failed, timeout, and explicitly allowlisted infrastructure-missing cells remain in the artifact. "
+            "An infrastructure-missing cell contributes no scientific metric and is never relabelled as a scientific timeout. "
+            "Missing cells not explicitly allowlisted remain fatal. Broad statistical interpretation uses domain-level summaries."
         ),
     }
 
