@@ -68,7 +68,7 @@ def main() -> None:
             rows.append({
                 "episode": episode_id,
                 "recording": ep["recording"],
-                "frame": int(ep["frame"]),
+                "frame": str(ep["frame"]),
                 "action": int(ep["action"]),
                 "mask_k": int(ep["mask_k"]),
                 "semantic_cost": float(semantic_cost),
