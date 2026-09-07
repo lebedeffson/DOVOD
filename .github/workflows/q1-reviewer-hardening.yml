@@ -1,0 +1,55 @@
+name: Q1 reviewer hardening experiments
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-reviewer-hardening.yml'
+      - 'research/q1_2026/benchmarks/run_paper_a_real_audit.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_scalability_robustness.py'
+      - 'data/processed/carriers/**'
+      - 'research/q1_2026/paper_b/**'
+
+permissions:
+  contents: read
+
+jobs:
+  paper-a-real-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run real procedural prerequisite audit
+        working-directory: research/q1_2026
+        run: python benchmarks/run_paper_a_real_audit.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper-a-real-audit
+          path: research/q1_2026/results/paper_a_real_audit.json
+          if-no-files-found: error
+
+  paper-b-scalability-robustness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r research/q1_2026/requirements.txt
+      - name: Run exact/POMCP scalability and cost-robustness stress
+        working-directory: research/q1_2026
+        run: python benchmarks/run_paper_b_scalability_robustness.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper-b-scalability-robustness
+          path: research/q1_2026/results/paper_b_scalability_robustness.json
+          if-no-files-found: error
