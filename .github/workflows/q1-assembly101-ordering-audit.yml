@@ -1,0 +1,50 @@
+name: Q1 Assembly101 ordering audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-assembly101-ordering-audit.yml'
+      - 'research/q1_2026/configs/assembly101_ordering_audit_contract.json'
+      - 'research/q1_2026/benchmarks/run_paper_a_assembly101_ordering_audit.py'
+      - 'research/q1_2026/tests/test_assembly101_ordering_audit.py'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned Assembly101 mistake annotations
+        uses: actions/checkout@v4
+        with:
+          repository: assembly-101/assembly101-mistake-detection
+          ref: 6f3a953267ffb86cdeabf6751af05a75a011a4f8
+          path: external/assembly101-mistake-detection
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install pytest
+      - name: Test audit semantics
+        working-directory: research/q1_2026
+        run: python -m pytest -q tests/test_assembly101_ordering_audit.py
+      - name: Run frozen held-out ordering audit
+        run: >-
+          python research/q1_2026/benchmarks/run_paper_a_assembly101_ordering_audit.py
+          --annotations-root external/assembly101-mistake-detection/annots
+          --contract research/q1_2026/configs/assembly101_ordering_audit_contract.json
+          --output research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json
+      - name: Emit compact evidence receipt
+        run: >-
+          python -c "import json; p='research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json'; d=json.load(open(p)); t=f'{d[\"primary_threshold\"]:.2f}'; r=d['primary_sequence_split']['thresholds'][t]; print('ASSEMBLY101_V5_RESULT='+json.dumps({'sequences':d['sequence_count'],'events':d['event_count'],'threshold':t,'candidate_relations':r['candidate_relations'],'correct_eligible':r['correct_eligible'],'correct_violations':r['correct_violations'],'order_mistake_eligible':r['order_mistake_eligible'],'order_mistake_violations':r['order_mistake_violations'],'refuted_relations':r['relations_refuted_by_heldout_correct_behavior']},sort_keys=True))"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paper-a-assembly101-ordering-audit-v5
+          path: research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json
+          if-no-files-found: error

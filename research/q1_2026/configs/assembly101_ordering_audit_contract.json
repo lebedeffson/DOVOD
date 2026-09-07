@@ -1,0 +1,34 @@
+{
+  "schema": "dovod-paper-a-assembly101-ordering-audit-contract-v1",
+  "frozen_on": "2026-09-07",
+  "dataset": {
+    "repository": "assembly-101/assembly101-mistake-detection",
+    "commit": "6f3a953267ffb86cdeabf6751af05a75a011a4f8",
+    "annotation_glob": "annots/*.csv",
+    "expected_sequence_count": 328,
+    "license": "CC BY-NC 4.0"
+  },
+  "action_token": "lowercased verb|this-object|that-object",
+  "induction": {
+    "target_labels": ["correct"],
+    "history_labels": ["correct"],
+    "minimum_target_support": 5,
+    "primary_predecessor_frequency": 0.9,
+    "sensitivity_predecessor_frequencies": [0.8, 0.95]
+  },
+  "evaluation": {
+    "history_labels": ["correct", "correction"],
+    "ordering_mistake_remarks": ["wrong order", "previous one is mistake"],
+    "primary_split": {
+      "unit": "sequence",
+      "train_fraction": 0.8,
+      "hash_key": "assembly101-sequence-split-v1"
+    },
+    "robustness_split": {
+      "unit": "toy_id",
+      "train_fraction": 0.8,
+      "hash_key": "assembly101-toy-split-v1"
+    }
+  },
+  "claim_boundary": "This audit studies whether high-frequency temporal predecessor relations learned from training sequences survive held-out labeled-correct behavior and whether their violations carry signal for explicit ordering mistakes. It does not identify mechanical prerequisites, causal necessity, or a complete action-applicability model."
+}

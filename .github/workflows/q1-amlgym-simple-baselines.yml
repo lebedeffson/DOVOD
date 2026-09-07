@@ -1,0 +1,113 @@
+name: Q1 AMLGym simple baselines
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-amlgym-simple-baselines.yml'
+      - 'research/q1_2026/paper_a/simple_baselines.py'
+      - 'research/q1_2026/benchmarks/run_amlgym_simple_baseline_case.py'
+      - 'research/q1_2026/benchmarks/run_amlgym_simple_baseline_matrix.py'
+      - 'research/q1_2026/benchmarks/merge_amlgym_simple_baseline_results.py'
+      - 'research/q1_2026/tests/test_simple_baselines.py'
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - run: python -m pytest -q tests/test_simple_baselines.py
+      - run: >-
+          python -m py_compile
+          paper_a/simple_baselines.py
+          benchmarks/run_amlgym_simple_baseline_case.py
+          benchmarks/run_amlgym_simple_baseline_matrix.py
+          benchmarks/merge_amlgym_simple_baseline_results.py
+
+  matrix:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+        trace_budget: [3, 10]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run all 20 domains for one learner/budget shard
+        run: >-
+          python benchmarks/run_amlgym_simple_baseline_matrix.py
+          --algorithm '${{ matrix.algorithm }}'
+          --trace-budget '${{ matrix.trace_budget }}'
+          --case-timeout 900
+          --output-dir 'artifacts/simple-baselines/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simple-baselines-${{ matrix.algorithm }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/simple-baselines/${{ matrix.algorithm }}-n${{ matrix.trace_budget }}/*.json
+          if-no-files-found: error
+
+  merge:
+    if: always()
+    needs: [preflight, matrix]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: simple-baselines-*
+          path: research/q1_2026/artifacts/simple-baselines-merged
+      - name: Merge all 160 prespecified comparator cells
+        run: >-
+          python benchmarks/merge_amlgym_simple_baseline_results.py
+          artifacts/simple-baselines-merged
+          --output results/paper_a_amlgym_simple_baselines_v5.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simple-baselines-merged
+          path: research/q1_2026/results/paper_a_amlgym_simple_baselines_v5.json
+          if-no-files-found: error
