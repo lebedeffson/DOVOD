@@ -1,13 +1,32 @@
 {
-  "schema": "dovod-q1-amlgym-seeded-replay-receipt-v1",
+  "schema": "dovod-q1-amlgym-seeded-replay-receipt-v2",
   "analysis_status": "post-freeze reproducibility diagnostic; primary frozen v4 aggregate remains authoritative",
-  "source": {
+  "initial_seeded_replay": {
     "run_id": 34057517956,
     "executable_sha": "d3ef17ee74ccb53acaf41075bfb1009b31ceb308",
     "merge_artifact_id": 9996680148,
     "merge_artifact_digest": "sha256:e75689c856fddf8c3a784ef6f8f6d9c8939b34a34b75c1a46eed7202a793d389",
     "raw_per_case_artifacts": 159,
     "expected_cells": 160
+  },
+  "strict_acceptance_validation": {
+    "run_id": 34101578609,
+    "executable_sha": "fe8c0a275a9c2e9d2b737942f34270be4d98520a",
+    "merge_artifact_id": 10011378589,
+    "merge_artifact_digest": "sha256:56bbec8a8a4da554ac725fed10693881431232ada53e8d7e9c9dff014baf7c0c",
+    "observed_case_count": 159,
+    "accounted_case_count": 160,
+    "expected_case_count": 160,
+    "complete_execution": true,
+    "protocol_clean": true,
+    "synthesized_infrastructure_cells": [
+      ["sokoban", "ROSAME", 10]
+    ],
+    "missing_cells": [],
+    "unexpected_cells": [],
+    "duplicate_cells": {},
+    "scientific_summary_matches_seeded_replay": true,
+    "note": "This acceptance run uses exact one-cell infrastructure allowlisting. Any other absent confirmatory cell remains fatal to the merge."
   },
   "rng_amendment": {
     "PYTHONHASHSEED": "0",
@@ -23,13 +42,20 @@
     "infrastructure_failures": 1,
     "infrastructure_cell": ["sokoban", "ROSAME", 10],
     "infrastructure_failure_stage": "hosted_runner_shutdown",
-    "infrastructure_evidence": {
-      "case_step_started_utc": "2026-09-06T20:21:36.9016562Z",
-      "runner_shutdown_utc": "2026-09-06T20:34:08.4538039Z",
-      "elapsed_before_shutdown_seconds": 751.5521477,
+    "strict_acceptance_infrastructure_evidence": {
+      "case_step_started_utc": "2026-09-07T08:47:57.2160559Z",
+      "runner_shutdown_utc": "2026-09-07T08:57:46.7568898Z",
+      "elapsed_before_shutdown_seconds": 589.5408339,
+      "scientific_timeout_seconds": 900,
       "scientific_timeout_reached": false
     },
     "note": "The hosted-runner shutdown is retained as an infrastructure failure and is not relabelled as the frozen 900-second scientific timeout."
+  },
+  "representative_determinism_check": {
+    "case": ["barman", "ROSAME", 10],
+    "scientific_fields_identical_across_seeded_repeats": true,
+    "only_different_fields": ["learn_seconds", "wall_seconds"],
+    "interpretation": "Pinned hash/RNG state stabilizes the scientific output on this nontrivial representative case; runtime remains environment-dependent."
   },
   "scientific_summary": {
     "usable_test_cells": 75,
@@ -87,5 +113,5 @@
     "primary_mean_cell_risk_reduction": 0.008293650793650794,
     "seeded_mean_cell_risk_reduction": 0.007182539682539682
   },
-  "claim_boundary": "This receipt reports the seeded post-freeze replay without replacing the prespecified primary v4 analysis. The raw 159-case merged artifact is preserved in GitHub Actions under the source artifact id and digest above. The missing Sokoban case contributes no scientific metric and is retained only as an infrastructure failure."
+  "claim_boundary": "This receipt reports the seeded post-freeze replay and its strict acceptance validation without replacing the prespecified primary v4 analysis. The strict acceptance aggregate is preserved in GitHub Actions under the recorded run, artifact id, and digest. The missing Sokoban case contributes no scientific metric and is retained only as an infrastructure failure."
 }
