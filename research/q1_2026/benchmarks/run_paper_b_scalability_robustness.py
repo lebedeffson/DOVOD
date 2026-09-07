@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT))
 
 from paper_b.count_dp import EvidenceCountDP, evidence_count_state_count, ordered_history_state_count
 from paper_b.pomcp import StaticWorldPOMCP
+from paper_b.robust_cost import minimax_regret_action
 from paper_b.static_world import Query, World, admissible, observation_probability, terminal_loss
 
 OUT = ROOT / "results" / "paper_b_scalability_robustness.json"
@@ -278,15 +279,11 @@ def acquisition_active_cost_minimax_regret() -> dict:
             optimal_actions[key] = action
             query_kinds[key] = queries[int(action[1])].kind if action[0] == "QUERY" else "DECIDE"
 
-        actions = set.intersection(*(set(v.keys()) for v in q_values.values()))
-        regrets = {
-            action: max(q_values[key][action] - opt_values[key] for key in scenarios)
-            for action in actions
-        }
-        robust_action = min(regrets, key=lambda a: (regrets[a], a))
+        robust = minimax_regret_action(q_values)
+        robust_action = robust.action
         nominal_action = optimal_actions[(1.0, 1.0)]
         nominal_worst = max(q_values[key][nominal_action] - opt_values[key] for key in scenarios)
-        robust_worst = regrets[robust_action]
+        robust_worst = robust.worst_case_regret
         improvement = nominal_worst - robust_worst
         improvements.append(improvement)
         distinct_actions = len(set(optimal_actions.values()))
