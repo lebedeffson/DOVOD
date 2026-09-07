@@ -22,7 +22,9 @@ External AMLGym validation uses a frozen v4 confirmatory design over 20 domains 
 
 The canonical frozen full-matrix result is stored in `results/paper_a_amlgym_confirmatory_matrix.json`: all 160 cells are present and the protocol is clean. 5 cells are retained as failures/timeouts; 80 successful cells have empty held-out test subsets; among 75 usable cells, 7 improve, 68 tie, and 0 worsen. Domain-level mean risk has 4 wins, 6 ties, and 0 losses (exact two-sided sign-test p=0.125). This is evidence for conservative selective deployment, not broad superiority across AMLGym.
 
-A later clean replay exposed upstream learner-process nondeterminism because the primary run did not pin Python hash order and common Python/NumPy/PyTorch RNG seeds. The primary result above is not retroactively replaced. A post-freeze reproducibility amendment now pins `PYTHONHASHSEED=0`, Python/NumPy seed `20260906`, and the same PyTorch seed for ROSAME while preserving the frozen domains, budgets, semantic split, repair vocabulary, deployment gate, metrics, and 900-second per-case limit. Its aggregate is treated as a separate reproducibility diagnostic.
+A later clean replay exposed upstream learner-process nondeterminism because the primary run did not pin Python hash order and common Python/NumPy/PyTorch RNG seeds. The primary result above is not retroactively replaced. A post-freeze reproducibility amendment now pins `PYTHONHASHSEED=0`, Python/NumPy seed `20260906`, and the same PyTorch seed for ROSAME while preserving the frozen domains, budgets, semantic split, repair vocabulary, deployment gate, metrics, and 900-second per-case limit. Its aggregate is treated as a separate reproducibility diagnostic. In that seeded replay, 159 per-case artifacts were produced and the hosted runner for `sokoban/ROSAME/10` shut down before the frozen 900-second scientific timeout; that cell is retained explicitly as an infrastructure-missing outcome. The 75 usable seeded cells contain 6 improvements, 69 ties, and 0 worsenings, with domain-level 3 wins / 7 ties / 0 losses (p=0.25). A repeated seeded `barman/ROSAME/10` run reproduces all scientific fields exactly; only wall-clock timing fields differ.
+
+Infrastructure accounting is narrowly allowlisted: only the observed `sokoban|ROSAME|10` artifact loss may be synthesized as `infrastructure_missing`; any other missing confirmatory cell remains fatal to the merge.
 
 ## Paper B — source-typed evidence acquisition
 
@@ -51,7 +53,7 @@ python -m pip install -r requirements.txt
 make release
 ```
 
-The two-paper release contains **36 tests** and regenerates Paper A controlled/stress verification, Paper B exact/POMCP/practical reports, and the recovered core benchmark. AMLGym requires `requirements-amlgym.txt` and is run separately because of its heavy external learner dependencies.
+The two-paper release contains **38 tests** and regenerates Paper A controlled/stress verification, Paper B exact/POMCP/practical reports, and the recovered core benchmark. AMLGym requires `requirements-amlgym.txt` and is run separately because of its heavy external learner dependencies.
 
 Important files:
 
