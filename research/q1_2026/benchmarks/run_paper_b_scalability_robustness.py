@@ -180,15 +180,16 @@ def make_balanced_worlds(seed: int, n_worlds: int = 512) -> tuple[World, ...]:
     return tuple(worlds)
 
 
-def cost_sensitive_queries(semantic_multiplier: float) -> tuple[Query, ...]:
-    """Fixed query vocabulary for semantic-cost uncertainty stress."""
+def cost_sensitive_queries(physical_multiplier: float, semantic_multiplier: float) -> tuple[Query, ...]:
+    """Fixed source-typed query vocabulary for two-dimensional cost stress."""
     qs = [
-        Query("calibrate-semantic", "calibrate_semantic", 0, 0.025 * semantic_multiplier),
+        Query("calibrate-physical", "calibrate_physical", 0, 0.010 * physical_multiplier),
+        Query("calibrate-semantic", "calibrate_semantic", 0, 0.010 * semantic_multiplier),
     ]
     for i in range(4):
-        qs.append(Query(f"state-{i}", "state", i, 0.040))
-        qs.append(Query(f"model-feature-{i}", "model_feature", i, 0.035 * semantic_multiplier))
-    return tuple(qs[:9])
+        qs.append(Query(f"state-{i}", "state", i, 0.012 * physical_multiplier))
+        qs.append(Query(f"model-feature-{i}", "model_feature", i, 0.014 * semantic_multiplier))
+    return tuple(qs)
 
 
 def unconditional_random_prior_cost_diagnostic() -> dict:
@@ -222,13 +223,23 @@ def unconditional_random_prior_cost_diagnostic() -> dict:
 
 
 def acquisition_active_cost_minimax_regret() -> dict:
-    """First-action minimax-regret stress on semantic-cost-active beliefs.
+    """First-action minimax regret under joint physical/semantic cost uncertainty.
 
-    Cases are selected by a predeclared mechanism criterion: at nominal semantic
-    cost 1, the exact planner must choose a semantic query. No robust-policy
-    performance is inspected during selection.
+    The selection rule is mechanism-based: a balanced hidden-world prior is kept
+    iff the exact planner chooses any information query at nominal costs (1,1).
+    Selection never inspects minimax performance or the high/low-cost outcomes.
     """
-    multipliers = (0.5, 1.0, 2.0, 3.0, 5.0, 8.0, 10.0)
+    scenarios = (
+        (0.5, 0.5),
+        (1.0, 1.0),
+        (2.0, 1.0),
+        (1.0, 2.0),
+        (5.0, 1.0),
+        (1.0, 5.0),
+        (5.0, 5.0),
+        (10.0, 1.0),
+        (1.0, 10.0),
+    )
     selected = []
     candidate_seed = 0
     while len(selected) < 8 and candidate_seed < 80:
@@ -236,67 +247,80 @@ def acquisition_active_cost_minimax_regret() -> dict:
         candidate_seed += 1
         worlds = make_balanced_worlds(seed)
         belief = uniform_belief(worlds)
-        nominal_queries = cost_sensitive_queries(1.0)
+        nominal_queries = cost_sensitive_queries(1.0, 1.0)
         nominal_solver = EvidenceCountDP(belief, worlds, MODELS, nominal_queries, horizon=3)
         vals = nominal_solver.root_action_values()
         opt = min(vals.values())
         action = min((a for a, v in vals.items() if v <= opt + 1e-12), key=lambda a: a)
-        if action[0] != "QUERY":
-            continue
-        q = nominal_queries[int(action[1])]
-        if q.kind not in ("model_feature", "calibrate_semantic"):
-            continue
-        selected.append((seed, worlds, belief))
+        if action[0] == "QUERY":
+            selected.append((seed, worlds, belief))
     if len(selected) < 8:
-        raise RuntimeError(f"only {len(selected)} semantic-acquisition-active cases found")
+        raise RuntimeError(f"only {len(selected)} acquisition-active balanced cases found")
 
     rows = []
     improvements = []
     switch_cases = 0
+    source_switch_cases = 0
     for case_id, (seed, worlds, belief) in enumerate(selected):
-        q_values_by_cost = {}
-        opt_by_cost = {}
-        optimal_action_by_cost = {}
-        for c in multipliers:
-            queries = cost_sensitive_queries(c)
+        q_values = {}
+        opt_values = {}
+        optimal_actions = {}
+        query_kinds = {}
+        for cp, cs in scenarios:
+            queries = cost_sensitive_queries(cp, cs)
             solver = EvidenceCountDP(belief, worlds, MODELS, queries, horizon=3)
             vals = solver.root_action_values()
-            q_values_by_cost[c] = vals
+            key = (cp, cs)
+            q_values[key] = vals
             opt = min(vals.values())
-            opt_by_cost[c] = opt
-            optimal_action_by_cost[c] = min((a for a, v in vals.items() if v <= opt + 1e-12), key=lambda a: a)
+            opt_values[key] = opt
+            action = min((a for a, v in vals.items() if v <= opt + 1e-12), key=lambda a: a)
+            optimal_actions[key] = action
+            query_kinds[key] = queries[int(action[1])].kind if action[0] == "QUERY" else "DECIDE"
 
-        actions = set.intersection(*(set(v.keys()) for v in q_values_by_cost.values()))
+        actions = set.intersection(*(set(v.keys()) for v in q_values.values()))
         regrets = {
-            action: max(q_values_by_cost[c][action] - opt_by_cost[c] for c in multipliers)
+            action: max(q_values[key][action] - opt_values[key] for key in scenarios)
             for action in actions
         }
         robust_action = min(regrets, key=lambda a: (regrets[a], a))
-        nominal_action = optimal_action_by_cost[1.0]
-        nominal_worst = max(q_values_by_cost[c][nominal_action] - opt_by_cost[c] for c in multipliers)
+        nominal_action = optimal_actions[(1.0, 1.0)]
+        nominal_worst = max(q_values[key][nominal_action] - opt_values[key] for key in scenarios)
         robust_worst = regrets[robust_action]
         improvement = nominal_worst - robust_worst
         improvements.append(improvement)
-        distinct = len(set(optimal_action_by_cost.values()))
-        switch_cases += int(distinct > 1)
+        distinct_actions = len(set(optimal_actions.values()))
+        distinct_kinds = len(set(query_kinds.values()))
+        switch_cases += int(distinct_actions > 1)
+        source_switch_cases += int(distinct_kinds > 1)
         rows.append({
             "case": case_id,
             "seed": seed,
             "worlds": len(worlds),
-            "cost_multipliers": list(multipliers),
+            "cost_scenarios": [[cp, cs] for cp, cs in scenarios],
             "nominal_action": list(nominal_action),
             "minimax_regret_action": list(robust_action),
             "nominal_worst_case_first_action_regret": nominal_worst,
             "minimax_worst_case_first_action_regret": robust_worst,
             "worst_case_regret_reduction": improvement,
-            "distinct_optimal_actions_across_cost_grid": distinct,
-            "optimal_actions_by_cost": {str(c): list(optimal_action_by_cost[c]) for c in multipliers},
+            "distinct_optimal_actions_across_cost_grid": distinct_actions,
+            "distinct_source_kinds_across_cost_grid": distinct_kinds,
+            "optimal_actions_by_cost": {
+                f"physical={cp:g},semantic={cs:g}": list(optimal_actions[(cp, cs)])
+                for cp, cs in scenarios
+            },
+            "optimal_source_kind_by_cost": {
+                f"physical={cp:g},semantic={cs:g}": query_kinds[(cp, cs)]
+                for cp, cs in scenarios
+            },
         })
     return {
-        "selection_rule": "first eight balanced-prior seeds whose exact nominal-cost root action is a semantic query",
+        "selection_rule": "first eight balanced-prior seeds whose exact nominal-cost (1,1) root action is QUERY",
         "candidate_seeds_examined": candidate_seed,
         "cases": len(rows),
+        "cost_scenarios": [[cp, cs] for cp, cs in scenarios],
         "cases_with_optimal_action_switch_across_cost_grid": switch_cases,
+        "cases_with_source_kind_switch_across_cost_grid": source_switch_cases,
         "cases_where_minimax_reduces_worst_case_first_action_regret": sum(x > 1e-12 for x in improvements),
         "mean_worst_case_first_action_regret_reduction": sum(improvements) / len(improvements),
         "max_worst_case_first_action_regret_reduction": max(improvements),
@@ -316,7 +340,7 @@ def main() -> None:
         "claim_boundary": (
             "The exact-vs-POMCP block uses controlled static hidden worlds and validates approximate root-action recovery only within that class. "
             "The large-query block is an engineering scalability stress and has no exact optimality claim at Q>9. "
-            "The minimax-regret block is a discrete cost-grid first-action robustness diagnostic on predeclared semantic-acquisition-active controlled beliefs, not an estimate of real operational costs. "
+            "The minimax-regret block is a discrete cost-grid first-action robustness diagnostic on predeclared acquisition-active balanced controlled beliefs under a two-dimensional physical/semantic cost grid, not an estimate of real operational costs. "
             "Real procedural usefulness remains supported separately by the frozen MECCANO Bellman-vs-myopic evaluation."
         ),
     }
