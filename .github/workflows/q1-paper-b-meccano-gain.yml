@@ -1,0 +1,41 @@
+name: Paper B MECCANO gain concentration
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-paper-b-meccano-gain.yml'
+      - 'experiments/information_selection/run_gain_concentration.py'
+      - 'experiments/information_selection/run_bellman_vs_myopic.py'
+      - 'research/reference_impl/q1_uncertainty_source_aware.py'
+      - 'research/reference_impl/source_aware_resolution_planner.py'
+
+permissions:
+  contents: read
+
+jobs:
+  gain_concentration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[dev]'
+      - name: Compile gain analysis
+        run: python -m py_compile experiments/information_selection/run_gain_concentration.py
+      - name: Run MECCANO gain concentration analysis
+        run: python experiments/information_selection/run_gain_concentration.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper-b-meccano-gain-concentration
+          path: results/information_selection/gain_concentration/gain_concentration.json
+          if-no-files-found: error
