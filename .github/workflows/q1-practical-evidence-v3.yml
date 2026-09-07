@@ -1,0 +1,171 @@
+name: Q1 practical evidence v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/full-rebuild-20260905'
+    paths:
+      - '.github/workflows/q1-practical-evidence-v3.yml'
+      - 'research/q1_2026/benchmarks/run_paper_a_amlgym_practical_case.py'
+      - 'research/q1_2026/benchmarks/run_paper_a_amlgym_practical_case_v2.py'
+      - 'research/q1_2026/benchmarks/merge_paper_a_amlgym_practical_cases_v2.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_impact_psr_acquisition.py'
+      - 'research/q1_2026/benchmarks/merge_paper_b_impact_psr_results.py'
+      - 'research/q1_2026/tests/test_paper_a_practical_threshold.py'
+      - 'research/q1_2026/tests/test_paper_a_practical_audit_semantics.py'
+      - 'research/q1_2026/tests/test_impact_psr_acquisition.py'
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run practical-evidence regression tests
+        run: >-
+          python -m pytest -q
+          tests/test_paper_a_practical_threshold.py
+          tests/test_paper_a_practical_audit_semantics.py
+          tests/test_impact_psr_acquisition.py
+      - name: Validate scripts compile
+        run: >-
+          python -m py_compile
+          benchmarks/run_paper_a_amlgym_practical_case.py
+          benchmarks/run_paper_a_amlgym_practical_case_v2.py
+          benchmarks/merge_paper_a_amlgym_practical_cases_v2.py
+          benchmarks/run_paper_b_impact_psr_acquisition.py
+          benchmarks/merge_paper_b_impact_psr_results.py
+
+  paper_a_matrix:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        domain: [barman, floortile, parking, tpp]
+        algorithm: [SAM, OffLAM, NOLAM, ROSAME]
+        trace_budget: [3, 10]
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            research/q1_2026/requirements.txt
+            research/q1_2026/requirements-amlgym.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt -r requirements-amlgym.txt
+      - name: Run explanatory AMLGym practical case v2
+        run: >-
+          python benchmarks/run_paper_a_amlgym_practical_case_v2.py
+          --domain '${{ matrix.domain }}'
+          --algorithm '${{ matrix.algorithm }}'
+          --trace-budget '${{ matrix.trace_budget }}'
+          --seed 20260906
+          --threshold 0.8
+          --threshold-min-samples 4
+          --output 'artifacts/paper-a-practical-v2/${{ matrix.domain }}__${{ matrix.algorithm }}__n${{ matrix.trace_budget }}.json'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paper-a-practical-v2-${{ matrix.domain }}-${{ matrix.algorithm }}-n${{ matrix.trace_budget }}
+          path: research/q1_2026/artifacts/paper-a-practical-v2/*.json
+          if-no-files-found: error
+
+  paper_a_merge:
+    if: always()
+    needs: [preflight, paper_a_matrix]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: paper-a-practical-v2-*
+          path: research/q1_2026/artifacts/paper-a-practical-v2-ci
+          merge-multiple: true
+      - name: Merge all 32 explanatory cases
+        run: >-
+          python benchmarks/merge_paper_a_amlgym_practical_cases_v2.py
+          artifacts/paper-a-practical-v2-ci
+          --output results/paper_a_amlgym_practical_cases_v2.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paper-a-practical-v2-merged
+          path: research/q1_2026/results/paper_a_amlgym_practical_cases_v2.json
+          if-no-files-found: error
+
+  paper_b_impact:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned IMPACT v1.1 source
+        uses: actions/checkout@v4
+        with:
+          repository: Kratos-Wen/IMPACT
+          ref: 4fed5faa5f05f7aece55712e458defa1f372b248
+          path: external/IMPACT
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run primary IMPACT PSR analysis (min support 5)
+        run: >-
+          python research/q1_2026/benchmarks/run_paper_b_impact_psr_acquisition.py
+          --impact-root external/IMPACT
+          --min-train-count 5
+          --output research/q1_2026/artifacts/paper-b-impact-v3/paper_b_impact_psr_mincount5.json
+      - name: Run prespecified coverage sensitivity (min support 3)
+        run: >-
+          python research/q1_2026/benchmarks/run_paper_b_impact_psr_acquisition.py
+          --impact-root external/IMPACT
+          --min-train-count 3
+          --output research/q1_2026/artifacts/paper-b-impact-v3/paper_b_impact_psr_mincount3.json
+      - name: Merge primary and sensitivity receipts
+        run: >-
+          python research/q1_2026/benchmarks/merge_paper_b_impact_psr_results.py
+          research/q1_2026/artifacts/paper-b-impact-v3
+          --output research/q1_2026/results/paper_b_impact_psr_acquisition_v3.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paper-b-impact-psr-v3
+          path: |
+            research/q1_2026/artifacts/paper-b-impact-v3/*.json
+            research/q1_2026/results/paper_b_impact_psr_acquisition_v3.json
+          if-no-files-found: error
