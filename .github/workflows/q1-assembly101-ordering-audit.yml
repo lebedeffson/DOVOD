@@ -66,24 +66,35 @@ jobs:
           p = 'research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json'
           d = json.load(open(p, encoding='utf-8'))
           t = f'{d["primary_threshold"]:.2f}'
-          r = d['primary_sequence_split']['thresholds'][t]
+          primary = d['primary_sequence_split']['thresholds']
+          toy = d['robustness_toy_group_split']['thresholds']
+          def compact(row):
+              return {
+                  'candidate_relations': row['candidate_relations'],
+                  'correct_eligible': row['correct_eligible'],
+                  'correct_violations': row['correct_violations'],
+                  'order_mistake_eligible': row['order_mistake_eligible'],
+                  'order_mistake_violations': row['order_mistake_violations'],
+                  'refuted_relations': row['relations_refuted_by_heldout_correct_behavior],
+              }
           receipt = {
               'sequences': d['sequence_count'],
               'events': d['event_count'],
-              'threshold': t,
-              'candidate_relations': r['candidate_relations'],
-              'correct_eligible': r['correct_eligible'],
-              'correct_violations': r['correct_violations'],
-              'order_mistake_eligible': r['order_mistake_eligible'],
-              'order_mistake_violations': r['order_mistake_violations'],
-              'refuted_relations': r['relations_refuted_by_heldout_correct_behavior'],
+              'primary_threshold': t,
+              'primary': {key: compact(primary[key]) for key in sorted(primary)},
+              'toy_group': {key: compact(toy[key]) for key in sorted(toy)},
           }
-          tag = (
-              f"seq{receipt['sequences']}-ev{receipt['events']}-rel{receipt['candidate_relations']}"
-              f"-ce{receipt['correct_eligible']}-cv{receipt['correct_violations']}"
-              f"-oe{receipt['order_mistake_eligible']}-ov{receipt['order_mistake_violations']}"
-              f"-ref{receipt['refuted_relations']}"
-          )
+          def tagpart(prefix, key, row):
+              return (
+                  f"{prefix}{key.replace('.', '')}-r{row['candidate_relations']}"
+                  f"-c{row['correct_violations']}of{row['correct_eligible']}"
+                  f"-o{row['order_mistake_violations']}of{row['order_mistake_eligible']}"
+                  f"-x{row['refuted_relations']}"
+              )
+          parts = [f"seq{d['sequence_count']}-ev{d['event_count']}"]
+          parts += [tagpart('p', key, primary[key]) for key in sorted(primary)]
+          parts += [tagpart('t', t, toy[t])]
+          tag = '_'.join(parts)
           print('ASSEMBLY101_V5_RESULT=' + json.dumps(receipt, sort_keys=True))
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
               handle.write(f'tag={tag}\n')
