@@ -34,11 +34,17 @@ def test_load_cases_ignores_embedded_shard_summary_duplicates(tmp_path: Path) ->
     assert rows[0]["status"] == "timeout"
 
 
-def test_missing_cell_can_be_accounted_as_infrastructure_failure() -> None:
+def test_parse_infrastructure_cell_key() -> None:
+    module = _module()
+    assert module.parse_infrastructure_cell("sokoban|ROSAME|10") == ("sokoban", "ROSAME", 10)
+
+
+def test_only_allowlisted_missing_cell_is_accounted_as_infrastructure_failure() -> None:
     module = _module()
     expected = {
         ("barman", "SAM", 3),
         ("sokoban", "ROSAME", 10),
+        ("transport", "ROSAME", 10),
     }
     unique = {
         ("barman", "SAM", 3): {
@@ -50,11 +56,34 @@ def test_missing_cell_can_be_accounted_as_infrastructure_failure() -> None:
         }
     }
 
-    accounted, synthesized = module.account_missing_as_infrastructure_failures(unique, expected)
+    accounted, synthesized = module.account_missing_as_infrastructure_failures(
+        unique,
+        expected,
+        {("sokoban", "ROSAME", 10)},
+    )
 
-    assert set(accounted) == expected
+    assert set(accounted) == {
+        ("barman", "SAM", 3),
+        ("sokoban", "ROSAME", 10),
+    }
+    assert ("transport", "ROSAME", 10) not in accounted
     assert synthesized == [["sokoban", "ROSAME", 10]]
     row = accounted[("sokoban", "ROSAME", 10)]
     assert row["status"] == "infrastructure_missing"
     assert row["failure_stage"] == "artifact_accounting"
     assert "never as scientific success or timeout" in row["error"]
+
+
+def test_unexpected_allowlisted_key_is_rejected() -> None:
+    module = _module()
+    expected = {("barman", "SAM", 3)}
+    try:
+        module.account_missing_as_infrastructure_failures(
+            {},
+            expected,
+            {("not-a-domain", "ROSAME", 10)},
+        )
+    except ValueError as exc:
+        assert "not present in the frozen contract" in str(exc)
+    else:
+        raise AssertionError("invalid allowlisted infrastructure key was accepted")
