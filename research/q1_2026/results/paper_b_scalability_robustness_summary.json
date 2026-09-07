@@ -1,0 +1,33 @@
+{
+  "artifact_digest": "sha256:3a3f4c9199895eb462ab896a2f51ca4f386213d1e36b20904dacbefaa1c756ac",
+  "artifact_id": 10014772246,
+  "claim_boundary": "The exact-vs-POMCP block uses controlled static hidden worlds and validates approximate root-action recovery only within that class. The large-query block is an engineering scalability stress and has no exact optimality claim at Q>9. The minimax-regret block is a discrete cost-grid first-action robustness diagnostic on predeclared acquisition-active balanced controlled beliefs under a two-dimensional physical/semantic cost grid, not an estimate of real operational costs. Real procedural usefulness remains supported separately by the frozen MECCANO Bellman-vs-myopic evaluation.",
+  "cost_uncertainty": {
+    "acquisition_active_minimax_regret": {
+      "candidate_seeds_examined": 8,
+      "cases": 8,
+      "cases_where_minimax_reduces_worst_case_first_action_regret": 8,
+      "cases_with_optimal_action_switch_across_cost_grid": 8,
+      "cases_with_source_kind_switch_across_cost_grid": 8,
+      "cost_scenarios": [[0.5,0.5],[1.0,1.0],[2.0,1.0],[1.0,2.0],[5.0,1.0],[1.0,5.0],[5.0,5.0],[10.0,1.0],[1.0,10.0]],
+      "max_worst_case_first_action_regret_reduction": 0.10430384765624973,
+      "mean_worst_case_first_action_regret_reduction": 0.09093275878906235,
+      "selection_rule": "first eight balanced-prior seeds whose exact nominal-cost (1,1) root action is QUERY"
+    },
+    "negative_unconditional_random_prior": {
+      "all_cases_trivial_immediate_decision": true,
+      "cases": 8,
+      "interpretation": "Unconditioned random priors were dominated by inadmissible worlds, so all tested costs led to immediate DECIDE. This negative diagnostic is retained and is not used as evidence of cost robustness."
+    }
+  },
+  "exact_vs_pomcp": {"cases":12,"exact_optimal_action_rate":1.0,"max_absolute_value_error":0.006451104513340161,"mean_absolute_value_error":0.0029121738988592077,"mean_pomcp_seconds":0.5564396195833355},
+  "head_sha": "cf5ee52926c3bd9fb3853c47e134ee5e3414a55f",
+  "large_query_stress": {
+    "12":{"count_dp_state_envelope":593775,"mean_pomcp_seconds":0.4393522629999988,"ordered_history_state_envelope":199411801,"same_root_action_as_myopic":3,"seeds":3},
+    "18":{"count_dp_state_envelope":5245786,"mean_pomcp_seconds":0.6244769943333305,"ordered_history_state_envelope":2238976117,"same_root_action_as_myopic":3,"seeds":3},
+    "24":{"count_dp_state_envelope":25827165,"mean_pomcp_seconds":0.7472971683333327,"ordered_history_state_envelope":12490815793,"same_root_action_as_myopic":3,"seeds":3},
+    "26":{"count_dp_state_envelope":40475358,"mean_pomcp_seconds":0.7812611286666709,"ordered_history_state_envelope":20158268677,"same_root_action_as_myopic":3,"seeds":3}
+  },
+  "schema": "dovod-paper-b-scalability-robustness-summary-v1",
+  "source_run_id": 34112086144
+}

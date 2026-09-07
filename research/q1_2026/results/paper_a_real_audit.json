@@ -1,0 +1,44 @@
+{
+  "claim_boundary": "A recorded successful counterexample falsifies only the universal empirical unary same-state prerequisite claim. Relations without a counterexample remain unresolved rather than validated as mechanically necessary. MECCANO and IMPACT component identities are not assumed to match, so no relation-level cross-dataset intersection is computed. Audit-queue reduction counts candidate relations removed from further necessity review; they do not measure human time saved.",
+  "datasets": [
+    {
+      "audit_queue_reduction_fraction": 0.7389705882352942,
+      "carrier_count_distribution": {"1":39,"2":17,"3":4,"6":1,"9":13,"10":45,"11":82},
+      "carrier_field": "recordings",
+      "components": 17,
+      "dataset": "MECCANO",
+      "directed_candidate_relations": 272,
+      "independent_units": 11,
+      "multi_carrier_refutations": 162,
+      "observed_refuted_relations": 201,
+      "single_carrier_refutations": 39,
+      "thresholds": [
+        {"audit_queue_reduction_fraction":0.7389705882352942,"directed_relations_refuted":201,"directed_relations_unresolved":71,"min_independent_carriers":1,"unordered_pair_categories":{"both_directions_refuted":65,"one_direction_refuted":71}},
+        {"audit_queue_reduction_fraction":0.5955882352941176,"directed_relations_refuted":162,"directed_relations_unresolved":110,"min_independent_carriers":2,"unordered_pair_categories":{"both_directions_refuted":26,"one_direction_refuted":110}},
+        {"audit_queue_reduction_fraction":0.5330882352941176,"directed_relations_refuted":145,"directed_relations_unresolved":127,"min_independent_carriers":3,"unordered_pair_categories":{"both_directions_refuted":9,"one_direction_refuted":127}}
+      ],
+      "unresolved_after_one_counterexample_rule": 71
+    },
+    {
+      "audit_queue_reduction_fraction": 0.9522058823529411,
+      "carrier_count_distribution": {"1":75,"2":23,"4":4,"5":2,"7":2,"12":56,"13":97},
+      "carrier_field": "participants",
+      "components": 17,
+      "dataset": "IMPACT",
+      "directed_candidate_relations": 272,
+      "independent_units": 13,
+      "multi_carrier_refutations": 184,
+      "observed_refuted_relations": 259,
+      "single_carrier_refutations": 75,
+      "thresholds": [
+        {"audit_queue_reduction_fraction":0.9522058823529411,"directed_relations_refuted":259,"directed_relations_unresolved":13,"min_independent_carriers":1,"unordered_pair_categories":{"both_directions_refuted":123,"one_direction_refuted":13}},
+        {"audit_queue_reduction_fraction":0.6764705882352942,"directed_relations_refuted":184,"directed_relations_unresolved":88,"min_independent_carriers":2,"unordered_pair_categories":{"both_directions_refuted":48,"one_direction_refuted":88}},
+        {"audit_queue_reduction_fraction":0.5919117647058824,"directed_relations_refuted":161,"directed_relations_unresolved":111,"min_independent_carriers":3,"unordered_pair_categories":{"both_directions_refuted":25,"one_direction_refuted":111}}
+      ],
+      "unresolved_after_one_counterexample_rule": 13
+    }
+  ],
+  "existing_nested_calibration": {"gain":0.0145436834,"gain_ci95":[0.0106327006,0.0191601454],"mean_candidate_restrictions_pruned":3.8545454545,"meccano_recall_after":0.885278447,"meccano_recall_before":0.8707347636,"pairs":110},
+  "schema": "dovod-paper-a-real-audit-v1",
+  "simple_threshold_warning": {"interpretation":"Requiring two independent carriers is a simple conservative heuristic, but in the frozen MECCANO LORO stress it reduces next-action recall. The carrier threshold is therefore an audit-policy choice, not a universally safer replacement for decision-level calibration.","one_carrier_rule_recall":0.9013079612,"recall_change":-0.11294534339999995,"two_carrier_rule_recall":0.7883626178}
+}
