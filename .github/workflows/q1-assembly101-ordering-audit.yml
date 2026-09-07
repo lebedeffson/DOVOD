@@ -89,13 +89,13 @@ jobs:
                   f"{prefix}{key.replace('.', '')}-r{row['candidate_relations']}"
                   f"-c{row['correct_violations']}of{row['correct_eligible']}"
                   f"-o{row['order_mistake_violations']}of{row['order_mistake_eligible']}"
-                  f"-x{row['refuted_relations']}"
+                  f"-x{row['relations_refuted_by_heldout_correct_behavior']}"
               )
           parts = [f"seq{d['sequence_count']}-ev{d['event_count']}"]
           parts += [tagpart('p', key, primary[key]) for key in sorted(primary)]
           parts += [tagpart('t', t, toy[t])]
           tag = '_'.join(parts)
-          print('ASSEMBLY101_V5_RESULT=' + json.dumps(receipt, sort_keys=True))
+          print('ASSEMBLY101_V5_RESULT=' + json.dumps(receipt, sort_keys=True)
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
               handle.write(f'tag={tag}\n')
           PY
