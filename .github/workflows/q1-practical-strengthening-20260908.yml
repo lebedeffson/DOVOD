@@ -18,6 +18,8 @@ on:
       - 'research/q1_2026/tests/test_paper_b_screened_exact.py'
       - 'research/q1_2026/benchmarks/run_paper_b_adaptive_exact_triage.py'
       - 'research/q1_2026/tests/test_paper_b_adaptive_exact_triage.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_stratified_screen_confirmation.py'
+      - 'research/q1_2026/tests/test_paper_b_stratified_screen_confirmation.py'
       - 'research/q1_2026/paper_b/pomcp.py'
   workflow_dispatch:
 
@@ -51,6 +53,7 @@ jobs:
           tests/test_paper_b_pomcp_bounded_calibration.py
           tests/test_paper_b_screened_exact.py
           tests/test_paper_b_adaptive_exact_triage.py
+          tests/test_paper_b_stratified_screen_confirmation.py
           tests/test_core.py
       - name: Run Paper A carrier-coverage analysis
         run: python benchmarks/run_paper_a_carrier_coverage_curve.py
@@ -64,6 +67,8 @@ jobs:
         run: python benchmarks/run_paper_b_screened_exact.py
       - name: Run Paper B adaptive exact-lookahead triage
         run: python benchmarks/run_paper_b_adaptive_exact_triage.py
+      - name: Run Paper B held-out source-stratified screen confirmation
+        run: python benchmarks/run_paper_b_stratified_screen_confirmation.py
       - name: Print compact evidence
         run: |
           echo '--- PAPER A ---'
@@ -78,6 +83,8 @@ jobs:
           cat results/paper_b_screened_exact.json
           echo '--- PAPER B: ADAPTIVE EXACT TRIAGE ---'
           cat results/paper_b_adaptive_exact_triage.json
+          echo '--- PAPER B: STRATIFIED SCREEN CONFIRMATION ---'
+          cat results/paper_b_stratified_screen_confirmation.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -90,4 +97,5 @@ jobs:
             research/q1_2026/results/paper_b_pomcp_bounded_calibration.json
             research/q1_2026/results/paper_b_screened_exact.json
             research/q1_2026/results/paper_b_adaptive_exact_triage.json
+            research/q1_2026/results/paper_b_stratified_screen_confirmation.json
           if-no-files-found: error
