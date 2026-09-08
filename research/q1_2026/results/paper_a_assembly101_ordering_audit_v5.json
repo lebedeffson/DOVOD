@@ -11,14 +11,54 @@
     "repository": "assembly-101/assembly101-mistake-detection"
   },
   "event_count": 3964,
-  "label_counts": {"correct": 2927, "correction": 330, "mistake": 707},
+  "label_counts": {
+    "correct": 2927,
+    "correction": 330,
+    "mistake": 707
+  },
   "primary_sequence_split": {
     "test_groups": 71,
     "test_sequences": 71,
     "thresholds": {
-      "0.80": {"candidate_relations": 59, "correct_eligible": 154, "correct_violations": 62, "heldout_correct_violation_rate": 0.4025974025974026, "order_mistake_eligible": 10, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.3, "relations_refuted_by_heldout_correct_behavior": 24, "relations_unrefuted_on_heldout_correct_behavior": 35, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.046153846153846156},
-      "0.90": {"candidate_relations": 18, "correct_eligible": 37, "correct_violations": 8, "heldout_correct_violation_rate": 0.21621621621621623, "order_mistake_eligible": 5, "order_mistake_violations": 2, "ordering_mistake_recall_within_covered_actions": 0.4, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 13, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.2},
-      "0.95": {"candidate_relations": 8, "correct_eligible": 14, "correct_violations": 3, "heldout_correct_violation_rate": 0.21428571428571427, "order_mistake_eligible": 0, "order_mistake_violations": 0, "ordering_mistake_recall_within_covered_actions": null, "relations_refuted_by_heldout_correct_behavior": 1, "relations_unrefuted_on_heldout_correct_behavior": 7, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.0}
+      "0.80": {
+        "candidate_relations": 59,
+        "correct_eligible": 154,
+        "correct_violations": 62,
+        "heldout_correct_violation_rate": 0.4025974025974026,
+        "order_mistake_eligible": 10,
+        "order_mistake_violations": 3,
+        "ordering_mistake_recall_within_covered_actions": 0.3,
+        "relations_refuted_by_heldout_correct_behavior": 24,
+        "relations_unrefuted_on_heldout_correct_behavior": 35,
+        "train_supported_target_actions": 83,
+        "violation_precision_correct_vs_order_mistake_only": 0.046153846153846156
+      },
+      "0.90": {
+        "candidate_relations": 18,
+        "correct_eligible": 37,
+        "correct_violations": 8,
+        "heldout_correct_violation_rate": 0.21621621621621623,
+        "order_mistake_eligible": 5,
+        "order_mistake_violations": 2,
+        "ordering_mistake_recall_within_covered_actions": 0.4,
+        "relations_refuted_by_heldout_correct_behavior": 5,
+        "relations_unrefuted_on_heldout_correct_behavior": 13,
+        "train_supported_target_actions": 83,
+        "violation_precision_correct_vs_order_mistake_only": 0.2
+      },
+      "0.95": {
+        "candidate_relations": 8,
+        "correct_eligible": 14,
+        "correct_violations": 3,
+        "heldout_correct_violation_rate": 0.21428571428571427,
+        "order_mistake_eligible": 0,
+        "order_mistake_violations": 0,
+        "ordering_mistake_recall_within_covered_actions": null,
+        "relations_refuted_by_heldout_correct_behavior": 1,
+        "relations_unrefuted_on_heldout_correct_behavior": 7,
+        "train_supported_target_actions": 83,
+        "violation_precision_correct_vs_order_mistake_only": 0.0
+      }
     },
     "train_groups": 257,
     "train_sequences": 257,
@@ -36,9 +76,45 @@
     "test_groups": 14,
     "test_sequences": 51,
     "thresholds": {
-      "0.80": {"candidate_relations": 52, "correct_eligible": 59, "correct_violations": 22, "heldout_correct_violation_rate": 0.3728813559322034, "order_mistake_eligible": 5, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.6, "relations_refuted_by_heldout_correct_behavior": 14, "relations_unrefuted_on_heldout_correct_behavior": 38, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.12},
-      "0.90": {"candidate_relations": 18, "correct_eligible": 31, "correct_violations": 11, "heldout_correct_violation_rate": 0.3548387096774194, "order_mistake_eligible": 5, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.6, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 13, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427},
-      "0.95": {"candidate_relations": 14, "correct_eligible": 25, "correct_violations": 11, "heldout_correct_violation_rate": 0.44, "order_mistake_eligible": 3, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 1.0, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 9, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427}
+      "0.80": {
+        "candidate_relations": 52,
+        "correct_eligible": 59,
+        "correct_violations": 22,
+        "heldout_correct_violation_rate": 0.3728813559322034,
+        "order_mistake_eligible": 5,
+        "order_mistake_violations": 3,
+        "ordering_mistake_recall_within_covered_actions": 0.6,
+        "relations_refuted_by_heldout_correct_behavior": 14,
+        "relations_unrefuted_on_heldout_correct_behavior": 38,
+        "train_supported_target_actions": 88,
+        "violation_precision_correct_vs_order_mistake_only": 0.12
+      },
+      "0.90": {
+        "candidate_relations": 18,
+        "correct_eligible": 31,
+        "correct_violations": 11,
+        "heldout_correct_violation_rate": 0.3548387096774194,
+        "order_mistake_eligible": 5,
+        "order_mistake_violations": 3,
+        "ordering_mistake_recall_within_covered_actions": 0.6,
+        "relations_refuted_by_heldout_correct_behavior": 5,
+        "relations_unrefuted_on_heldout_correct_behavior": 13,
+        "train_supported_target_actions": 88,
+        "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427
+      },
+      "0.95": {
+        "candidate_relations": 14,
+        "correct_eligible": 25,
+        "correct_violations": 11,
+        "heldout_correct_violation_rate": 0.44,
+        "order_mistake_eligible": 3,
+        "order_mistake_violations": 3,
+        "ordering_mistake_recall_within_covered_actions": 1.0,
+        "relations_refuted_by_heldout_correct_behavior": 5,
+        "relations_unrefuted_on_heldout_correct_behavior": 9,
+        "train_supported_target_actions": 88,
+        "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427
+      }
     },
     "train_groups": 87,
     "train_sequences": 277,

@@ -4,16 +4,46 @@
     "frequency_single_edit_gated": {
       "domain_ties": 7,
       "domains": {
-        "barman": {"baseline_minus_dovod_mean_risk": 0.006944444444444445, "usable_cells": 8},
-        "childsnack": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 4},
-        "depots": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "elevators": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "floortile": {"baseline_minus_dovod_mean_risk": 0.017857142857142856, "usable_cells": 8},
-        "npuzzle": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "parking": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "sokoban": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 7},
-        "tpp": {"baseline_minus_dovod_mean_risk": 0.0234375, "usable_cells": 8},
-        "transport": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8}
+        "barman": {
+          "baseline_minus_dovod_mean_risk": 0.006944444444444445,
+          "usable_cells": 8
+        },
+        "childsnack": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 4
+        },
+        "depots": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "elevators": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "floortile": {
+          "baseline_minus_dovod_mean_risk": 0.017857142857142856,
+          "usable_cells": 8
+        },
+        "npuzzle": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "parking": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "sokoban": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 7
+        },
+        "tpp": {
+          "baseline_minus_dovod_mean_risk": 0.0234375,
+          "usable_cells": 8
+        },
+        "transport": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        }
       },
       "dovod_domain_losses": 0,
       "dovod_domain_wins": 3,
@@ -22,16 +52,46 @@
     "random_single_edit_gated": {
       "domain_ties": 7,
       "domains": {
-        "barman": {"baseline_minus_dovod_mean_risk": 0.004340277777777778, "usable_cells": 8},
-        "childsnack": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 4},
-        "depots": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "elevators": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "floortile": {"baseline_minus_dovod_mean_risk": 0.017857142857142856, "usable_cells": 8},
-        "npuzzle": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "parking": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8},
-        "sokoban": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 7},
-        "tpp": {"baseline_minus_dovod_mean_risk": 0.0078125, "usable_cells": 8},
-        "transport": {"baseline_minus_dovod_mean_risk": 0.0, "usable_cells": 8}
+        "barman": {
+          "baseline_minus_dovod_mean_risk": 0.004340277777777778,
+          "usable_cells": 8
+        },
+        "childsnack": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 4
+        },
+        "depots": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "elevators": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "floortile": {
+          "baseline_minus_dovod_mean_risk": 0.017857142857142856,
+          "usable_cells": 8
+        },
+        "npuzzle": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "parking": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        },
+        "sokoban": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 7
+        },
+        "tpp": {
+          "baseline_minus_dovod_mean_risk": 0.0078125,
+          "usable_cells": 8
+        },
+        "transport": {
+          "baseline_minus_dovod_mean_risk": 0.0,
+          "usable_cells": 8
+        }
       },
       "dovod_domain_losses": 0,
       "dovod_domain_wins": 3,
@@ -58,11 +118,51 @@
     "empty_test_cases": 80,
     "expected_cases": 160,
     "failed_or_timed_out_cases": [
-      {"error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 40, col 7 to line: 40, col 22", "key": ["childsnack", "NOLAM", 3], "status": "failed"},
-      {"error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 40, col 7 to line: 40, col 22", "key": ["childsnack", "NOLAM", 10], "status": "failed"},
-      {"error": "KeyError: 'kitchen'", "key": ["childsnack", "OffLAM", 3], "status": "failed"},
-      {"error": "KeyError: 'kitchen'", "key": ["childsnack", "OffLAM", 10], "status": "failed"},
-      {"error": "case exceeded 900 seconds", "key": ["sokoban", "ROSAME", 10], "status": "timeout"}
+      {
+        "error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 40, col 7 to line: 40, col 22",
+        "key": [
+          "childsnack",
+          "NOLAM",
+          3
+        ],
+        "status": "failed"
+      },
+      {
+        "error": "SyntaxError: Not able to handle: (xist ?param_1) found at line: 40, col 7 to line: 40, col 22",
+        "key": [
+          "childsnack",
+          "NOLAM",
+          10
+        ],
+        "status": "failed"
+      },
+      {
+        "error": "KeyError: 'kitchen'",
+        "key": [
+          "childsnack",
+          "OffLAM",
+          3
+        ],
+        "status": "failed"
+      },
+      {
+        "error": "KeyError: 'kitchen'",
+        "key": [
+          "childsnack",
+          "OffLAM",
+          10
+        ],
+        "status": "failed"
+      },
+      {
+        "error": "case exceeded 900 seconds",
+        "key": [
+          "sokoban",
+          "ROSAME",
+          10
+        ],
+        "status": "timeout"
+      }
     ],
     "missing_cases": [],
     "observed_unique_cases": 160,
@@ -80,8 +180,23 @@
   "schema": "dovod-paper-a-simple-baselines-v5-receipt-v1",
   "status": "post_confirmatory_descriptive",
   "vs_upstream": {
-    "dovod": {"losses": 0, "mean_risk_reduction": 0.007182539682539682, "ties": 69, "wins": 6},
-    "frequency_single_edit_gated": {"losses": 0, "mean_risk_reduction": 0.0020370370370370373, "ties": 73, "wins": 2},
-    "random_single_edit_gated": {"losses": 0, "mean_risk_reduction": 0.003981481481481482, "ties": 73, "wins": 2}
+    "dovod": {
+      "losses": 0,
+      "mean_risk_reduction": 0.007182539682539682,
+      "ties": 69,
+      "wins": 6
+    },
+    "frequency_single_edit_gated": {
+      "losses": 0,
+      "mean_risk_reduction": 0.0020370370370370373,
+      "ties": 73,
+      "wins": 2
+    },
+    "random_single_edit_gated": {
+      "losses": 0,
+      "mean_risk_reduction": 0.003981481481481482,
+      "ties": 73,
+      "wins": 2
+    }
   }
 }
