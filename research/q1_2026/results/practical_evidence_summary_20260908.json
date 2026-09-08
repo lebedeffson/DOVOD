@@ -1,0 +1,171 @@
+{
+  "schema": "dovod-q1-practical-evidence-summary-20260908-v1",
+  "note": "Compact consolidation of successful GitHub Actions artifacts. Detailed per-case JSON remains in the referenced workflow artifacts and can be regenerated from the benchmark scripts.",
+  "paper_a": {
+    "carrier_coverage": {
+      "MECCANO": {
+        "independent_carriers": 11,
+        "observed_refutations": 201,
+        "expected_fraction_s1": 0.705563,
+        "expected_fraction_s2": 0.773677,
+        "expected_fraction_s4": 0.839937,
+        "carriers_for_90pct_expected": 7,
+        "carriers_for_95pct_expected": 9,
+        "leave_one_expected_fraction": 0.982361,
+        "leave_one_adversarial_fraction": 0.805970
+      },
+      "IMPACT": {
+        "independent_carriers": 13,
+        "observed_refutations": 259,
+        "expected_fraction_s1": 0.621919,
+        "expected_fraction_s2": 0.680972,
+        "expected_fraction_s4": 0.754899,
+        "carriers_for_90pct_expected": 9,
+        "carriers_for_95pct_expected": 11,
+        "leave_one_expected_fraction": 0.977725,
+        "leave_one_adversarial_fraction": 0.710425
+      },
+      "hard_threshold_boundary": {
+        "recall_keep_single_carrier": 0.9013079612,
+        "recall_require_two_or_more_carriers": 0.7883626178
+      }
+    }
+  },
+  "paper_b": {
+    "acquisition_active_pomcp": {
+      "cases": 12,
+      "seeds_per_budget": 5,
+      "max_simulations": 20000,
+      "runs_at_max_budget": 60,
+      "exact_root_action_rate_at_20000": 0.0,
+      "query_vs_decide_family_accuracy_at_20000": 0.0,
+      "mean_true_root_action_regret_at_20000": 0.0232358838,
+      "max_true_root_action_regret_at_20000": 0.0501762
+    },
+    "bounded_pomcp_calibration": {
+      "selected_exploration_constant_on_development": 0.2,
+      "confirmation_exact_root_action_rate": 0.0,
+      "confirmation_query_vs_decide_family_accuracy": 0.4444444444,
+      "confirmation_mean_true_root_action_regret": 0.02237524,
+      "confirmation_max_true_root_action_regret": 0.0467271
+    },
+    "likelihood_misspecification": {
+      "alpha_0_50": {
+        "mean_expected_query_count": 0.0,
+        "mean_wrong_decision_probability": 0.5,
+        "mean_full_policy_regret": 0.0232358838
+      },
+      "alpha_0_75": {
+        "mean_expected_query_count": 0.15646,
+        "mean_wrong_decision_probability": 0.49022,
+        "mean_full_policy_regret": 0.0190545
+      },
+      "alpha_1_00": {
+        "mean_expected_query_count": 1.85332,
+        "mean_wrong_decision_probability": 0.405744,
+        "mean_full_policy_regret": 0.0
+      },
+      "alpha_1_25": {
+        "mean_expected_query_count": 1.97604,
+        "mean_wrong_decision_probability": 0.39661,
+        "mean_full_policy_regret": 0.00253713
+      }
+    },
+    "adaptive_h1_margin_triage": {
+      "cases": 48,
+      "positive_nonmyopic_value_cases": 39,
+      "positive_nonmyopic_value_fraction": 0.8125,
+      "mean_h1_minus_h3_value": 0.016071827,
+      "max_h1_minus_h3_value": 0.0486148633,
+      "thresholds_up_to_0_005_escalation_rate": 0.0,
+      "thresholds_from_0_01_escalation_rate": 1.0
+    },
+    "h1_top6_screen_development": {
+      "cases": 12,
+      "root_exact_action_rate": 0.9166666667,
+      "query_vs_decide_family_accuracy": 1.0,
+      "zero_full_policy_regret_rate": 0.8333333333,
+      "mean_full_policy_regret": 0.0006412598,
+      "max_full_policy_regret": 0.0042119141,
+      "mean_state_reduction_factor": 3.8923077,
+      "mean_wall_clock_speedup_including_screen": 3.538
+    },
+    "h1_top6_semantic_root_stress": {
+      "cases": 8,
+      "full_root_query_in_screen_rate": 0.0,
+      "root_exact_action_rate": 0.0,
+      "query_vs_decide_family_accuracy": 0.875,
+      "zero_full_policy_regret_rate": 0.0,
+      "mean_full_policy_regret": 0.0057766162,
+      "max_full_policy_regret": 0.0171016602,
+      "observed_exact_root_query_shallow_ranks": [10, 10, 7, 7, 10, 8, 10, 8]
+    },
+    "h2_top6_semantic_confirmation": {
+      "cases": 8,
+      "full_root_query_in_screen_rate": 0.0,
+      "root_exact_action_rate": 0.0,
+      "query_vs_decide_family_accuracy": 0.75,
+      "zero_full_policy_regret_rate": 0.0,
+      "mean_full_policy_regret": 0.0054157739,
+      "max_full_policy_regret": 0.0125529102
+    },
+    "source_cost_transfer_h1_top6": {
+      "cases": 48,
+      "zero_full_policy_regret_rate": 1.0,
+      "root_exact_action_rate": 1.0,
+      "mean_state_reduction_factor": 3.8923077,
+      "root_source_distribution": {
+        "physical": 30,
+        "DECIDE": 18,
+        "semantic": 0
+      }
+    },
+    "typed_core_eight_query_screen": {
+      "rule": "retain all state and model_feature queries; remove calibrate_physical and calibrate_semantic",
+      "unconditional_fresh": {
+        "cases": 32,
+        "root_exact_action_rate": 1.0,
+        "zero_full_policy_regret_rate": 1.0,
+        "mean_state_reduction_factor": 1.8276573787,
+        "mean_wall_clock_speedup": 1.8185184807
+      },
+      "physical_root_stress_fresh": {
+        "cases": 8,
+        "root_exact_action_rate": 1.0,
+        "zero_full_policy_regret_rate": 1.0,
+        "mean_state_reduction_factor": 1.8276573787,
+        "mean_wall_clock_speedup": 1.8436393157
+      },
+      "semantic_root_stress_fresh": {
+        "cases": 8,
+        "root_exact_action_rate": 1.0,
+        "zero_full_policy_regret_rate": 1.0,
+        "mean_state_reduction_factor": 1.8276573787,
+        "mean_wall_clock_speedup": 1.8634932457
+      },
+      "claim_boundary": "Engineering ablation only. Calibration queries can have decision value in other workloads; enable only after workload-specific ablation."
+    }
+  },
+  "workflow_receipts": {
+    "consolidated_practical": {
+      "run_id": 34253533901,
+      "artifact_sha256": "fdd51597aa12c427cd89f4e697901d9ff71fe6dc7941ab8f434d0b02f821c7e1"
+    },
+    "source_cost_transfer": {
+      "run_id": 34254123103,
+      "artifact_sha256": "1b0b71a7477307c872d25e4a206c8b2509f6cbfd9ef3ce7cff7b1ad5c595ab35"
+    },
+    "semantic_root_stress": {
+      "run_id": 34254358784,
+      "artifact_sha256": "4ee114be179b46fdd85e51026645648dc3aba28ad270ed3fec67278d30705ac3"
+    },
+    "h2_screen_confirmation": {
+      "run_id": 34254617818,
+      "artifact_sha256": "83d0c6d2c5c5f6150463d741673f3520b9a1750c552e07be1cdba91c45376a06"
+    },
+    "structural_typed_core": {
+      "run_id": 34254915011,
+      "artifact_sha256": "f87c309093a444273de81c4d3abe314e8fc49a06f668e9e60038009d1392af31"
+    }
+  }
+}
