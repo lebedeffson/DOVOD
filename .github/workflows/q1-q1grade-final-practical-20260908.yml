@@ -1,0 +1,106 @@
+name: Q1 grade final practical validation 2026-09-08
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/q1grade-finalization-20260908'
+      - 'q1/practical-strengthening-20260908'
+    paths:
+      - '.github/workflows/q1-q1grade-final-practical-20260908.yml'
+      - 'research/q1_2026/benchmarks/run_paper_a_multiaction16.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_noise_h10.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_assembly101_acquisition.py'
+      - 'research/q1_2026/tests/test_paper_a_multiaction16.py'
+      - 'research/q1_2026/tests/test_paper_b_assembly101_adapter.py'
+
+permissions:
+  contents: read
+
+jobs:
+  q1-final-practical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+
+      - run: python -m pip install --upgrade pip gdown
+      - run: python -m pip install -r requirements.txt
+
+      - name: Run focused leakage and controlled-scaling tests
+        run: >-
+          python -m pytest -q
+          tests/test_paper_a_multiaction16.py
+          tests/test_paper_b_assembly101_adapter.py
+
+      - name: Run 16-bit overlapping-action repair benchmark
+        run: python benchmarks/run_paper_a_multiaction16.py
+
+      - name: Run noisy-observation and deep-horizon stress
+        run: python benchmarks/run_paper_b_noise_h10.py
+
+      - name: Download official Assembly101 fine-grained annotation bundle
+        shell: bash
+        run: |
+          rm -rf /tmp/assembly101-fine
+          mkdir -p /tmp/assembly101-fine
+          gdown --folder 'https://drive.google.com/drive/folders/1G1o9rTf1W5V4Q4ZSJfG2XAz0esmrwZ0g?usp=sharing' -O /tmp/assembly101-fine
+          train_file="$(find /tmp/assembly101-fine -type f -name train.csv | head -n 1)"
+          test_file="$(find /tmp/assembly101-fine -type f -name test.csv | head -n 1)"
+          test -n "$train_file"
+          test -n "$test_file"
+          test "$(dirname "$train_file")" = "$(dirname "$test_file")"
+          echo "Assembly101 exact file receipts before evaluation:"
+          sha256sum "$train_file" "$test_file"
+          wc -c "$train_file" "$test_file"
+          echo "ASSEMBLY101_ANNOTATIONS_DIR=$(dirname "$train_file")" >> "$GITHUB_ENV"
+
+      - name: Run leakage-safe Assembly101 primary plus prespecified sensitivities
+        run: >-
+          python benchmarks/run_paper_b_assembly101_acquisition.py
+          --annotations-dir "$ASSEMBLY101_ANNOTATIONS_DIR"
+          --min-train-count 5
+          --output results/paper_b_assembly101_acquisition_v2.json
+
+      - name: Print compact final evidence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          a = json.loads(Path('results/paper_a_multiaction16.json').read_text())
+          n = json.loads(Path('results/paper_b_noise_h10.json').read_text())
+          b = json.loads(Path('results/paper_b_assembly101_acquisition_v2.json').read_text())
+          print(json.dumps({
+              'paper_a_multiaction16': a['summary'],
+              'paper_b_noise': n['noisy_observation_sweep']['summary'],
+              'paper_b_h10': {
+                  'root_action_stability_fraction': n['h10_pomcp_stress']['root_action_stability_fraction'],
+                  'mean_absolute_value_shift_h6_h10': n['h10_pomcp_stress']['mean_absolute_value_shift_h6_h10'],
+              },
+              'paper_b_assembly101': {
+                  'metadata_isolation': b['metadata_isolation'],
+                  'coverage': b['coverage'],
+                  'comparison': b['comparison'],
+                  'sensitivity': b['sensitivity'],
+              },
+          }, indent=2, sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-final-practical-evidence-20260908
+          path: |
+            research/q1_2026/results/paper_a_multiaction16.json
+            research/q1_2026/results/paper_b_noise_h10.json
+            research/q1_2026/results/paper_b_assembly101_acquisition_v2.json
+          if-no-files-found: error
