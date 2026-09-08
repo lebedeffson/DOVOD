@@ -10,6 +10,7 @@ on:
       - 'research/q1_2026/tests/test_paper_a_carrier_coverage_curve.py'
       - 'research/q1_2026/benchmarks/run_paper_b_pomcp_budget_curve.py'
       - 'research/q1_2026/tests/test_paper_b_pomcp_budget_curve.py'
+      - 'research/q1_2026/paper_b/pomcp.py'
   workflow_dispatch:
 
 permissions:
