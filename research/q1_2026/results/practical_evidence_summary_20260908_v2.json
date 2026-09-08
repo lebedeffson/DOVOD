@@ -1,0 +1,217 @@
+{
+  "schema": "dovod-q1-practical-evidence-summary-20260908-v2-final",
+  "status": "Q1-credible empirical package; no acceptance guarantee; stop benchmark expansion unless a concrete reviewer concern requires it",
+  "paper_a": {
+    "controlled_8bit": {
+      "candidate_edits": 128,
+      "training_observations": 640,
+      "planted_edits_recovered": 3,
+      "repaired_complete_support_risk": 0.0,
+      "upstream_complete_support_risk": 0.125,
+      "global_deletion_complete_support_risk": 0.125,
+      "holdout_errors": 0,
+      "holdout_n": 4096,
+      "one_sided_exact_upper95": 0.0007311,
+      "paired_exact_p_vs_upstream": 3.73e-155,
+      "noise_5pct_n640_mean_support_risk": 0.0015625,
+      "noise_5pct_n640_max_support_risk": 0.0078125
+    },
+    "multiaction16": {
+      "state_bits": 16,
+      "actions": 2,
+      "candidate_edits_per_action": 160,
+      "seeds_per_n": 3,
+      "action_A": {
+        "n256": {"mean_risk": 0.0, "exact_recovery_rate": 1.0},
+        "n512": {"mean_risk": 0.00390625, "max_risk": 0.01171875, "exact_recovery_rate": 0.6666666667},
+        "n1024": {"mean_risk": 0.0, "exact_recovery_rate": 1.0, "mean_fit_seconds": 1.2349252613}
+      },
+      "action_B": {
+        "n256": {"mean_risk": 0.0104166667, "max_risk": 0.01953125, "exact_recovery_rate": 0.3333333333},
+        "n512": {"mean_risk": 0.0, "exact_recovery_rate": 1.0},
+        "n1024": {"mean_risk": 0.0, "exact_recovery_rate": 1.0, "mean_fit_seconds": 1.1615165123}
+      },
+      "n1024_all_action_seed_fits_exact_and_zero_risk": true
+    },
+    "amlgym_primary": {
+      "prespecified_cells": 160,
+      "usable_cells": 75,
+      "cell_improve_tie_worsen": [7, 68, 0],
+      "domain_win_tie_loss": [4, 6, 0],
+      "domain_sign_test_two_sided_p": 0.125,
+      "claim": "selective deployment, not broad superiority"
+    },
+    "amlgym_seeded_replay": {
+      "usable_cells": 75,
+      "cell_improve_tie_worsen": [6, 69, 0],
+      "domain_win_tie_loss": [3, 7, 0],
+      "domain_sign_test_two_sided_p": 0.25
+    },
+    "postconfirmatory_mechanism": {
+      "cells": 32,
+      "operator_surfaces": 216,
+      "counterexample_flagged_surfaces": 13,
+      "calibration_approved_nonempty_repairs": 7,
+      "abstained_surfaces": 6,
+      "heldout_decisions": 4448,
+      "upstream_errors": 90,
+      "dovod_errors": 20,
+      "coarse_global_threshold_improved_cells": 0,
+      "boundary": "selected positive frozen domains; explanatory only"
+    },
+    "carrier_coverage": {
+      "MECCANO": {
+        "independent_carriers": 11,
+        "observed_refutations": 201,
+        "unresolved_of_272": 71,
+        "carriers_for_90pct_expected": 7,
+        "carriers_for_95pct_expected": 9,
+        "leave_one_expected_fraction": 0.982361
+      },
+      "IMPACT": {
+        "independent_carriers": 13,
+        "observed_refutations": 259,
+        "unresolved_of_272": 13,
+        "carriers_for_90pct_expected": 9,
+        "carriers_for_95pct_expected": 11,
+        "leave_one_expected_fraction": 0.977725
+      },
+      "hard_two_carrier_negative_control": {
+        "recall_one_carrier": 0.9013079612,
+        "recall_two_or_more": 0.7883626178
+      },
+      "nested_calibration": {
+        "pairs": 110,
+        "recall_before": 0.8707348,
+        "recall_after": 0.8852784,
+        "gain": 0.0145437,
+        "gain_ci95": [0.0106327, 0.0191601],
+        "mean_pruned": 3.8545454545
+      }
+    }
+  },
+  "paper_b": {
+    "exact_count_dp": {
+      "controlled_cases": 3,
+      "worlds": 256,
+      "queries": 9,
+      "horizon": 3,
+      "count_states": 1330,
+      "ordered_history_states": 6175,
+      "history_to_count_ratio": 4.642857,
+      "exact_value_and_root_action_match_all_references": true,
+      "clean_ci_count_vs_posterior_speedup_mean": 7.186
+    },
+    "meccano": {
+      "episodes": 777,
+      "mixed_episodes": 187,
+      "exact_cost": 1.6657369,
+      "myopic_cost": 1.7379769,
+      "relative_reduction": 0.041566,
+      "bellman_minus_myopic_ci95": [-0.0799234, -0.0655095],
+      "mixed_positive_gain_fraction": 0.4492,
+      "top20pct_share_of_positive_gain": 0.6152
+    },
+    "impact_psr": {
+      "covered_test_transitions": 19,
+      "official_test_transitions": 25,
+      "coverage": 0.76,
+      "exact_vs_myopic": [0, 19, 0],
+      "root_action_disagreements": 0,
+      "cost_grid_root_changes": 19,
+      "claim": "real negative non-myopic regime"
+    },
+    "assembly101": {
+      "policy_metadata_source": "official_train_only",
+      "test_only_action_ids": 68,
+      "test_only_row_occurrences": 2370,
+      "evaluated_transitions_using_test_only_metadata": 0,
+      "train_sequences": 2514,
+      "test_videos": 1055,
+      "raw_test_transitions": 258825,
+      "evaluated_transitions": 200813,
+      "coverage": 0.7758640008,
+      "eligible_unique_transition_pairs": 4496,
+      "exact_mean_realized_cost": 0.0788161125,
+      "myopic_mean_realized_cost": 0.3183248594,
+      "mean_realized_cost_reduction": 0.2395087469,
+      "root_action_disagreement_fraction": 0.2531857997,
+      "transition_exact_better_tie_worse": [57104, 43673, 100036],
+      "mean_gain_when_exact_better": 0.9045077403,
+      "mean_loss_when_exact_worse": 0.0355326083,
+      "transition_bootstrap_exact_minus_myopic_ci95": [-0.2414703306, -0.2376227323],
+      "video_cluster": {
+        "evaluated_videos": 1055,
+        "video_exact_better_tie_worse": [1055, 0, 0],
+        "transition_weighted_exact_minus_myopic": -0.2395087469,
+        "transition_weighted_ci95": [-0.2419068940, -0.2370735524],
+        "equal_video_weighted_exact_minus_myopic": -0.2363498987,
+        "equal_video_weighted_ci95": [-0.2389910064, -0.2337117250],
+        "bootstrap_draws": 10000
+      },
+      "support_thresholds_3_5_10_same_result": true,
+      "cost_multiplier_mean_reduction": {
+        "0.5": 0.2530921803,
+        "1.0": 0.2395087469,
+        "2.0": 0.2143287536,
+        "5.0": 0.1542693949
+      },
+      "source_receipts": {
+        "train_sha256": "748cd23d772d2ecf9c4506378401d26765afc5c096bc7b2c802e5733fcefa766",
+        "test_sha256": "afcda4252eadc3d7ab1c4a59924da8fdff1dd76e9add249656218292181a7959"
+      },
+      "boundary": "verb/noun are annotation information channels, not physical-vs-semantic source labels"
+    },
+    "noisy_observation_sweep": {
+      "epsilon_0.00_mean_advantage": 0.1864501953,
+      "epsilon_0.05_mean_advantage": 0.1607031128,
+      "epsilon_0.10_mean_advantage": 0.0929677734,
+      "epsilon_0.20_mean_advantage": 0.0146277344,
+      "positive_case_fraction_at_0.20": 0.75
+    },
+    "acquisition_active_pomcp_negative_control": {
+      "cases": 12,
+      "seeds_per_case": 5,
+      "simulations": 20000,
+      "runs": 60,
+      "exact_optimal_root_rate": 0.0,
+      "query_vs_decide_family_accuracy": 0.0,
+      "mean_true_root_regret": 0.0232358838,
+      "max_true_root_regret": 0.0501762
+    },
+    "likelihood_misspecification": {
+      "alpha_0.50": {"expected_queries": 0.0, "wrong_decision_probability": 0.5, "regret": 0.0232358838},
+      "alpha_0.75": {"expected_queries": 0.15646, "wrong_decision_probability": 0.49022, "regret": 0.0190545},
+      "alpha_1.00": {"expected_queries": 1.85332, "wrong_decision_probability": 0.405744, "regret": 0.0},
+      "alpha_1.25": {"expected_queries": 1.97604, "wrong_decision_probability": 0.39661, "regret": 0.00253713}
+    },
+    "typed_core_exact_screen": {
+      "cases": 48,
+      "root_exact_action_rate": 1.0,
+      "zero_full_policy_regret_rate": 1.0,
+      "mean_state_reduction_factor": 1.8276573787,
+      "mean_wall_clock_speedup_range": [1.8185, 1.8635],
+      "boundary": "workload-specific ablation only"
+    },
+    "shallow_screen_negative_controls": {
+      "semantic_root_h1_top6_exact_root_rate": 0.0,
+      "semantic_root_h2_top6_exact_root_rate": 0.0,
+      "exact_root_query_shallow_ranks": [10, 10, 7, 7, 10, 8, 10, 8]
+    },
+    "bluebirds_source_selection": {
+      "top5_calibrated_test_accuracy": 0.90,
+      "raw_majority_accuracy": 0.75,
+      "paired_difference": 0.15,
+      "paired_ci95": [0.0625, 0.2375],
+      "naive_orientation_flip_accuracy": 0.70
+    }
+  },
+  "final_receipts": {
+    "focused_practical_run_id": 34258190161,
+    "focused_practical_artifact_id": 10068960598,
+    "focused_practical_artifact_sha256": "1f8f63e3af5cbde105956988caddb0ae1eb6b3a127da2e44a38f2c6b5131165c",
+    "standard_ci_python_3_10_3_11_3_12": "success",
+    "q1_research_core": "success",
+    "bluebirds_external": "success"
+  }
+}
