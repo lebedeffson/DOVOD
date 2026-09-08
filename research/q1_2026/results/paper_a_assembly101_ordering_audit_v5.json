@@ -1,0 +1,49 @@
+{
+  "claim_boundary": "This audit studies whether high-frequency temporal predecessor relations learned from training sequences survive held-out labeled-correct behavior and whether their violations carry signal for explicit ordering mistakes. It does not identify mechanical prerequisites, causal necessity, or a complete action-applicability model.",
+  "dataset": {
+    "annotation_glob": "annots/*.csv",
+    "commit": "6f3a953267ffb86cdeabf6751af05a75a011a4f8",
+    "count_note": "The pinned checkout used by the executable audit contains 328 CSV annotation files, matching the dataset README. GitHub code-search indexing is not used as an integrity source.",
+    "expected_sequence_count": 328,
+    "license": "CC BY-NC 4.0",
+    "pinned_checkout_annotation_file_count": 328,
+    "readme_reported_sequence_count": 328,
+    "repository": "assembly-101/assembly101-mistake-detection"
+  },
+  "event_count": 3964,
+  "label_counts": {"correct": 2927, "correction": 330, "mistake": 707},
+  "primary_sequence_split": {
+    "test_groups": 71,
+    "test_sequences": 71,
+    "thresholds": {
+      "0.80": {"candidate_relations": 59, "correct_eligible": 154, "correct_violations": 62, "heldout_correct_violation_rate": 0.4025974025974026, "order_mistake_eligible": 10, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.3, "relations_refuted_by_heldout_correct_behavior": 24, "relations_unrefuted_on_heldout_correct_behavior": 35, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.046153846153846156},
+      "0.90": {"candidate_relations": 18, "correct_eligible": 37, "correct_violations": 8, "heldout_correct_violation_rate": 0.21621621621621623, "order_mistake_eligible": 5, "order_mistake_violations": 2, "ordering_mistake_recall_within_covered_actions": 0.4, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 13, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.2},
+      "0.95": {"candidate_relations": 8, "correct_eligible": 14, "correct_violations": 3, "heldout_correct_violation_rate": 0.21428571428571427, "order_mistake_eligible": 0, "order_mistake_violations": 0, "ordering_mistake_recall_within_covered_actions": null, "relations_refuted_by_heldout_correct_behavior": 1, "relations_unrefuted_on_heldout_correct_behavior": 7, "train_supported_target_actions": 83, "violation_precision_correct_vs_order_mistake_only": 0.0}
+    },
+    "train_groups": 257,
+    "train_sequences": 257,
+    "unit": "sequence"
+  },
+  "primary_threshold": 0.9,
+  "provenance": {
+    "artifact_digest": "sha256:48e5d51f9f4b1fde1c4946241437f3f9cd5f46604e2c2001ccb8308e7289cead",
+    "artifact_id": 10025229855,
+    "full_json_sha256": "c3fab7d93db542c3278f5d368e93fd779ff43c07d9a141105b2581e39265a3e1",
+    "workflow_head_sha": "dcff9be0e0bea1aa328a046fc6c50716642c0485",
+    "workflow_run_id": 34139277922
+  },
+  "robustness_toy_group_split": {
+    "test_groups": 14,
+    "test_sequences": 51,
+    "thresholds": {
+      "0.80": {"candidate_relations": 52, "correct_eligible": 59, "correct_violations": 22, "heldout_correct_violation_rate": 0.3728813559322034, "order_mistake_eligible": 5, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.6, "relations_refuted_by_heldout_correct_behavior": 14, "relations_unrefuted_on_heldout_correct_behavior": 38, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.12},
+      "0.90": {"candidate_relations": 18, "correct_eligible": 31, "correct_violations": 11, "heldout_correct_violation_rate": 0.3548387096774194, "order_mistake_eligible": 5, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 0.6, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 13, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427},
+      "0.95": {"candidate_relations": 14, "correct_eligible": 25, "correct_violations": 11, "heldout_correct_violation_rate": 0.44, "order_mistake_eligible": 3, "order_mistake_violations": 3, "ordering_mistake_recall_within_covered_actions": 1.0, "relations_refuted_by_heldout_correct_behavior": 5, "relations_unrefuted_on_heldout_correct_behavior": 9, "train_supported_target_actions": 88, "violation_precision_correct_vs_order_mistake_only": 0.21428571428571427}
+    },
+    "train_groups": 87,
+    "train_sequences": 277,
+    "unit": "toy_id"
+  },
+  "schema": "dovod-paper-a-assembly101-v5-receipt-v1",
+  "sequence_count": 328
+}
