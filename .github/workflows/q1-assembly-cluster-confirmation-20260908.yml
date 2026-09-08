@@ -1,0 +1,72 @@
+name: Q1 Assembly101 video-cluster confirmation 2026-09-08
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'q1/q1grade-finalization-20260908'
+    paths:
+      - '.github/workflows/q1-assembly-cluster-confirmation-20260908.yml'
+      - 'research/q1_2026/benchmarks/run_paper_b_assembly101_cluster_bootstrap.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_assembly101_acquisition.py'
+      - 'research/q1_2026/tests/test_paper_b_assembly101_cluster_bootstrap.py'
+
+permissions:
+  contents: read
+
+jobs:
+  cluster-confirmation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - run: python -m pip install --upgrade pip gdown
+      - run: python -m pip install -r requirements.txt
+      - name: Test cluster analysis
+        run: python -m pytest -q tests/test_paper_b_assembly101_adapter.py tests/test_paper_b_assembly101_cluster_bootstrap.py
+      - name: Download official Assembly101 fine-grained annotations
+        shell: bash
+        run: |
+          rm -rf /tmp/assembly101-fine
+          mkdir -p /tmp/assembly101-fine
+          gdown --folder 'https://drive.google.com/drive/folders/1G1o9rTf1W5V4Q4ZSJfG2XAz0esmrwZ0g?usp=sharing' -O /tmp/assembly101-fine
+          train_file="$(find /tmp/assembly101-fine -type f -name train.csv | head -n 1)"
+          test_file="$(find /tmp/assembly101-fine -type f -name test.csv | head -n 1)"
+          test -n "$train_file"
+          test -n "$test_file"
+          test "$(dirname "$train_file")" = "$(dirname "$test_file")"
+          sha256sum "$train_file" "$test_file"
+          echo "ASSEMBLY101_ANNOTATIONS_DIR=$(dirname "$train_file")" >> "$GITHUB_ENV"
+      - name: Run whole-video cluster bootstrap
+        run: >-
+          python benchmarks/run_paper_b_assembly101_cluster_bootstrap.py
+          --annotations-dir "$ASSEMBLY101_ANNOTATIONS_DIR"
+          --min-train-count 5
+          --draws 10000
+          --output results/paper_b_assembly101_video_cluster.json
+      - name: Print cluster evidence
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x = json.loads(Path('results/paper_b_assembly101_video_cluster.json').read_text())
+          print(json.dumps({
+              'coverage': x['coverage'],
+              'policy_isolation': x['policy_isolation'],
+              'cluster_analysis': x['cluster_analysis'],
+              'claim_boundary': x['claim_boundary'],
+          }, indent=2, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: q1-assembly101-video-cluster-20260908
+          path: research/q1_2026/results/paper_b_assembly101_video_cluster.json
+          if-no-files-found: error
