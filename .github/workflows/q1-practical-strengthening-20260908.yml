@@ -10,6 +10,8 @@ on:
       - 'research/q1_2026/tests/test_paper_a_carrier_coverage_curve.py'
       - 'research/q1_2026/benchmarks/run_paper_b_pomcp_budget_curve.py'
       - 'research/q1_2026/tests/test_paper_b_pomcp_budget_curve.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_likelihood_misspecification.py'
+      - 'research/q1_2026/tests/test_paper_b_likelihood_misspecification.py'
       - 'research/q1_2026/paper_b/pomcp.py'
   workflow_dispatch:
 
@@ -39,17 +41,22 @@ jobs:
           python -m pytest -q
           tests/test_paper_a_carrier_coverage_curve.py
           tests/test_paper_b_pomcp_budget_curve.py
+          tests/test_paper_b_likelihood_misspecification.py
           tests/test_core.py
       - name: Run Paper A carrier-coverage analysis
         run: python benchmarks/run_paper_a_carrier_coverage_curve.py
       - name: Run Paper B POMCP compute-budget curve
         run: python benchmarks/run_paper_b_pomcp_budget_curve.py
+      - name: Run Paper B likelihood-misspecification stress test
+        run: python benchmarks/run_paper_b_likelihood_misspecification.py
       - name: Print compact evidence
         run: |
           echo '--- PAPER A ---'
           cat results/paper_a_carrier_coverage_curve.json
-          echo '--- PAPER B ---'
+          echo '--- PAPER B: POMCP ---'
           cat results/paper_b_pomcp_budget_curve.json
+          echo '--- PAPER B: MISSPECIFICATION ---'
+          cat results/paper_b_likelihood_misspecification.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -58,4 +65,5 @@ jobs:
             research/q1_2026/results/paper_a_carrier_coverage_curve.json
             research/q1_2026/results/paper_a_carrier_coverage_curve.csv
             research/q1_2026/results/paper_b_pomcp_budget_curve.json
+            research/q1_2026/results/paper_b_likelihood_misspecification.json
           if-no-files-found: error
