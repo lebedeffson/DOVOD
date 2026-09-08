@@ -17,6 +17,7 @@ History = tuple[tuple[int, int], ...]
 class _ActionStat:
     visits: int = 0
     value_sum: float = 0.0
+
     @property
     def mean_reward(self) -> float:
         return self.value_sum / self.visits if self.visits else 0.0
@@ -51,32 +52,47 @@ class StaticWorldPOMCP:
         if len(b) != len(self.worlds) or len(b) == 0 or np.any(b < 0) or b.sum() <= 0:
             raise ValueError("invalid initial belief")
         self.initial = b / b.sum()
-        self._lik = np.empty((len(self.queries),2,len(self.worlds)), dtype=float)
-        for qi,q in enumerate(self.queries):
-            for obs in (0,1):
-                self._lik[qi,obs,:] = [observation_probability(q,w,self.models,obs) for w in self.worlds]
-        self._loss = np.asarray([[terminal_loss(d,w,self.models,false_allow=self.false_allow,false_block=self.false_block) for w in self.worlds] for d in (0,1)], dtype=float)
-        self.nodes: dict[History,_Node] = {}
+        self._lik = np.empty((len(self.queries), 2, len(self.worlds)), dtype=float)
+        for qi, q in enumerate(self.queries):
+            for obs in (0, 1):
+                self._lik[qi, obs, :] = [observation_probability(q, w, self.models, obs) for w in self.worlds]
+        self._loss = np.asarray(
+            [
+                [
+                    terminal_loss(
+                        d,
+                        w,
+                        self.models,
+                        false_allow=self.false_allow,
+                        false_block=self.false_block,
+                    )
+                    for w in self.worlds
+                ]
+                for d in (0, 1)
+            ],
+            dtype=float,
+        )
+        self.nodes: dict[History, _Node] = {}
 
     @property
     def actions(self) -> tuple[Action, ...]:
-        return tuple(("QUERY",i) for i in range(len(self.queries))) + (("DECIDE",0),("DECIDE",1))
+        return tuple(("QUERY", i) for i in range(len(self.queries))) + (("DECIDE", 0), ("DECIDE", 1))
 
     def _sample_world(self) -> int:
         u, c = self.rng.random(), 0.0
-        for i,p in enumerate(self.initial):
+        for i, p in enumerate(self.initial):
             c += float(p)
             if u <= c:
                 return i
-        return len(self.worlds)-1
+        return len(self.worlds) - 1
 
     def _sample_observation(self, qi: int, wi: int) -> int:
-        return int(self.rng.random() < float(self._lik[int(qi),1,int(wi)]))
+        return int(self.rng.random() < float(self._lik[int(qi), 1, int(wi)]))
 
     def _posterior(self, history: History) -> np.ndarray:
         b = self.initial.copy()
-        for qi,obs in history:
-            b *= self._lik[int(qi),int(obs)]
+        for qi, obs in history:
+            b *= self._lik[int(qi), int(obs)]
             z = float(b.sum())
             if z <= 0:
                 return self.initial.copy()
@@ -87,23 +103,23 @@ class StaticWorldPOMCP:
         b = self._posterior(history)
         risks = self._loss @ b
         decision = int(np.argmin(risks))
-        return -float(self._loss[decision,wi])
+        return -float(self._loss[decision, wi])
 
     def _valid_actions(self, history: History) -> tuple[Action, ...]:
         if len(history) >= self.horizon:
-            return (("DECIDE",0),("DECIDE",1))
+            return (("DECIDE", 0), ("DECIDE", 1))
         return self.actions
 
     def _select_uct(self, node: _Node, valid: tuple[Action, ...]) -> Action:
-        unvisited = [a for a in valid if node.actions.get(a,_ActionStat()).visits == 0]
+        unvisited = [a for a in valid if node.actions.get(a, _ActionStat()).visits == 0]
         if unvisited:
             return unvisited[self.rng.randrange(len(unvisited))]
-        logn = log(max(1,node.visits))
+        logn = log(max(1, node.visits))
         scored = []
         for action in valid:
             stat = node.actions[action]
-            scored.append((stat.mean_reward + self.exploration*sqrt(logn/stat.visits), action))
-        return max(scored, key=lambda x:(x[0],x[1]))[1]
+            scored.append((stat.mean_reward + self.exploration * sqrt(logn / stat.visits), action))
+        return max(scored, key=lambda x: (x[0], x[1]))[1]
 
     def _simulate(self, wi: int, history: History) -> float:
         if len(history) >= self.horizon:
@@ -114,13 +130,13 @@ class StaticWorldPOMCP:
             return self._rollout(wi, history)
         action = self._select_uct(node, self._valid_actions(history))
         if action[0] == "DECIDE":
-            reward = -float(self._loss[int(action[1]),wi])
+            reward = -float(self._loss[int(action[1]), wi])
         else:
             qi = int(action[1])
-            obs = self._sample_observation(qi,wi)
-            reward = -float(self.queries[qi].cost) + self._simulate(wi, history+((qi,obs),))
+            obs = self._sample_observation(qi, wi)
+            reward = -float(self.queries[qi].cost) + self._simulate(wi, history + ((qi, obs),))
         node.visits += 1
-        stat = node.actions.setdefault(action,_ActionStat())
+        stat = node.actions.setdefault(action, _ActionStat())
         stat.visits += 1
         stat.value_sum += reward
         return reward
@@ -129,12 +145,25 @@ class StaticWorldPOMCP:
         sims = int(simulations)
         if sims <= 0:
             raise ValueError("simulations must be positive")
-        self.nodes.setdefault(tuple(),_Node())
+        self.nodes.setdefault(tuple(), _Node())
         for _ in range(sims):
             self._simulate(self._sample_world(), tuple())
         root = self.nodes[tuple()]
-        visited = [(a,s) for a,s in root.actions.items() if s.visits > 0]
+        visited = [(a, s) for a, s in root.actions.items() if s.visits > 0]
         if not visited:
             raise RuntimeError("POMCP root has no visited action")
-        action, stat = max(visited, key=lambda item:(item[1].visits,item[1].mean_reward))
-        return POMCPResult(value=-float(stat.mean_reward), action=action, simulations=sims, root_visits=int(root.visits), root_action_visits=tuple(sorted((a,s.visits) for a,s in visited)))
+
+        # The UCT exploration bonus is used only while building the tree.  At
+        # execution time POMCP chooses the root action with the largest estimated
+        # action value (here: mean accumulated reward), not the most-visited action.
+        # Visit count can remain useful as a diagnostic, but using it as the
+        # execution rule can bias the returned action when exploration remains
+        # substantial at finite simulation budgets.
+        action, stat = max(visited, key=lambda item: (item[1].mean_reward, item[1].visits, item[0]))
+        return POMCPResult(
+            value=-float(stat.mean_reward),
+            action=action,
+            simulations=sims,
+            root_visits=int(root.visits),
+            root_action_visits=tuple(sorted((a, s.visits) for a, s in visited)),
+        )
