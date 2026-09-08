@@ -11,56 +11,64 @@ python -m pip install -r requirements.txt
 make release
 ```
 
-`make release` runs the complete unit suite and regenerates the controlled Paper A benchmark/stress verification, the Paper B exact/POMCP/practical reports, and the recovered exact count-DP core. The clean release currently contains 36 tests.
+`make release` runs the complete local unit suite and regenerates the controlled Paper A benchmark/stress verification, Paper B exact/POMCP/practical reports, and the recovered exact count-DP core. The repository-level `tests` workflow additionally runs full `pytest`, reference-result verification, and public-repository integrity checks on Python 3.10, 3.11, and 3.12.
 
 Wall-clock values are machine-dependent. Exact reproducibility targets are values, selected actions, state counts, planted-edit recovery, theorem/formula checks, deterministic splits, and provenance hashes rather than absolute seconds.
 
-## AMLGym confirmatory matrix
+## Paper A frozen AMLGym confirmatory matrix
 
 The confirmatory contract is `configs/amlgym_q1_contract.json` (schema `dovod-q1-amlgym-contract-v4`). It pins AMLGym 1.0.11, 20 IPC-style domains, four learner families, two trace budgets, the semantic-state split, the repair vocabulary, and the calibration-only deployment gate.
 
-The canonical workflow is `.github/workflows/q1-amlgym-confirmatory.yml`.
+The canonical workflow is `.github/workflows/q1-amlgym-confirmatory.yml`. It runs a label-free preflight that replays the historically inspected pilot selector and verifies zero semantic-state overlap before confirmatory test labels are used. Heavy ROSAME/n=10 cases are independently orchestrated under the same frozen 900-second scientific case limit. Orchestration changes do not alter the scientific contract.
 
-It first runs a label-free preflight that replays the historically inspected pilot selector and proves zero semantic-state overlap before test labels are opened. Seven learner/budget combinations run as ordinary 20-domain shards. ROSAME with trace budget 10 is executed as 20 independent per-domain jobs because the sequential shard can exceed a hosted-runner wall-time limit. This changes orchestration only; every scientific argument and frozen split remains identical.
+The merge is outcome-agnostic: CI requires structural completeness and protocol integrity, never favorable scientific performance. The canonical frozen aggregate is `results/paper_a_amlgym_confirmatory_matrix.json` and retains improved, tied, worsened, failed/timeout, and empty-test cells.
 
-The ROSAME/n=10 jobs use the original frozen 900-second per-case limit and emit a case receipt whenever the process remains under workflow control. Thus a normal timeout or upstream failure remains one of the 160 outcomes rather than disappearing as a missing artifact. A hosted-runner cancellation can still preempt the shell before a receipt is written; such infrastructure cancellation is not re-labelled as a scientific timeout.
-
-The merge step is outcome-agnostic: CI requires execution completeness and protocol integrity, never favorable scientific performance.
-
-Canonical frozen aggregate:
-
-`results/paper_a_amlgym_confirmatory_matrix.json`
-
-The aggregate retains improved, tied, worsened, failed/timeout, and empty-test cells. Broad interpretation uses domain means and the exact domain-level sign test.
+Primary frozen result: 160/160 cells, 5 retained failures/timeouts, 80 empty-test cells, 75 usable cells, `7/68/0` usable-cell wins/ties/losses versus upstream, domain means `4/6/0`, exact two-sided sign-test `p=0.125`. This primary result is never replaced by a later replay.
 
 ### Post-freeze RNG reproducibility amendment
 
-A clean replay after the primary v4 run exposed an upstream reproducibility limitation: the DOVOD state/action selection and repair/calibration/test split are SHA-256 deterministic, but AMLGym learner execution was launched without an explicit process hash seed or common Python/NumPy/PyTorch RNG seed. Repeated learner executions can therefore produce different learned domains even when the scientific split and downstream DOVOD code are unchanged.
+The DOVOD state/action selection and repair/calibration/test split are SHA-256 deterministic, but the first AMLGym run predated explicit process hash and common Python/NumPy/PyTorch RNG pinning. The reproducibility amendment therefore pins `PYTHONHASHSEED=0` plus the declared process seeds while leaving domains, budgets, fingerprints, repair vocabulary, deployment gate, metrics, and scientific timeout unchanged.
 
-This is not repaired retroactively by choosing a more favorable replay. The original frozen v4 aggregate remains the primary confirmatory result. The post-freeze reproducibility amendment pins:
+The seeded replay is reported as a diagnostic: 75 usable cells, `6/69/0`, domain `3/7/0`, `p=0.25`. The observed `sokoban|ROSAME|10` hosted-runner artifact loss is narrowly allowlisted as `infrastructure_missing`; any other absent confirmatory cell remains fatal. A repeated seeded `barman/ROSAME/10` case reproduces all scientific fields exactly while runtime fields vary as expected.
 
-- `PYTHONHASHSEED=0` before the Python interpreter starts;
-- `DOVOD_CONFIRMATORY_SEED=20260906` for Python and NumPy via opt-in `sitecustomize.py`;
-- the same seed for PyTorch in ROSAME jobs.
+### Paper A V5 post-confirmatory evidence
 
-The amendment changes neither domains, trace budgets, state fingerprints, repair/calibration/test buckets, repair vocabulary, deployment gate, metrics, nor the 900-second scientific case limit. It is reported as a reproducibility diagnostic rather than silently substituted for the frozen primary analysis. Any amended scientific aggregate is compared with, rather than selected over, the primary aggregate.
+V5 does not change or reopen the frozen confirmatory analysis.
 
-## Blue Birds external validation
+`results/paper_a_amlgym_simple_baselines_v5.json` is a compact tracked receipt for workflow run `34137791383` / artifact `10025537361`. The full 160-cell panel compares DOVOD with random and frequency at-most-one-edit heuristics under the same repair/calibration/test partition and calibration gate. It is explicitly post-confirmatory and descriptive.
 
-`benchmarks/run_paper_b_bluebirds.py` pins `welinder/cubam` commit `fe5ba700f1adbb489c69af311558d64370d73d36` and deterministically hashes tasks into calibration/test partitions. Test ground truth is used only for evaluation.
+`results/paper_a_assembly101_ordering_audit_v5.json` is a compact tracked receipt for Assembly101 workflow run `34139277922` / artifact `10025229855`, pinned to source commit `6f3a953267ffb86cdeabf6751af05a75a011a4f8`. It tests whether high-frequency predecessor relations survive held-out labeled-correct behavior and whether their violations are selective for explicit ordering mistakes. It is a falsification/claim-boundary audit, not validation of mechanical necessity or the full DOVOD repair layer.
 
-The external result supports calibration-based reliability selection on held-out tasks; naive orientation flipping is retained as a negative result. It is not a procedural-action benchmark and does not by itself validate the full Bellman planner.
+Narrative provenance and interpretation are in `docs/PAPER_A_V5_EVIDENCE.md`.
 
-## Frozen procedural evidence boundary
+## Paper B evidence separation
 
-The MECCANO/IMPACT numbers in `external_evidence/dovod_short_papers_v12.json` are provenance-preserving snapshots of previously frozen DOVOD evidence. Raw third-party datasets are not redistributed here. The MECCANO source-acquisition study uses controlled perfect reveals and therefore does not empirically identify persistent source orientation/reliability.
+Paper B keeps four evidence regimes distinct:
+
+1. controlled exact/approximation validation for the static binary-evidence model;
+2. frozen MECCANO procedural acquisition evidence with controlled perfect reveals;
+3. official-split IMPACT PSR negative lookahead benchmark and cost sensitivity;
+4. Blue Birds held-out source-calibration evidence.
+
+Machine-readable receipts include `paper_b_meccano_gain_summary_v4.json`, `paper_b_impact_psr_summary_v4.json`, `paper_b_scalability_robustness_summary.json`, and `paper_b_bluebirds_external_summary.json`.
+
+The Blue Birds result supports calibration-based source selection only. It is not a procedural-action benchmark and does not validate the full Bellman planner. The MECCANO acquisition replay uses controlled perfect reveals and therefore does not empirically identify real persistent source orientation/reliability.
+
+## External-source pinning
+
+- AMLGym: version 1.0.11 plus frozen contract;
+- IMPACT PSR: source commit `4fed5faa5f05f7aece55712e458defa1f372b248`;
+- Blue Birds / `welinder/cubam`: commit `fe5ba700f1adbb489c69af311558d64370d73d36`;
+- Assembly101 mistake annotations: commit `6f3a953267ffb86cdeabf6751af05a75a011a4f8`.
+
+Raw third-party datasets are not redistributed unless their licensing/source contract permits it; tracked receipts preserve source commits and evaluation provenance.
 
 ## Integrity
 
-The authoritative clean validation is Git + CI plus the generated evidence JSONs. `MANIFEST.sha256` is generated from a concrete release tree with:
+The authoritative validation is Git + CI + generated/trackable evidence receipts. `MANIFEST.sha256` is generated from a concrete release tree with:
 
 ```bash
 python scripts/build_manifest.py
 ```
 
-It must be regenerated whenever release files change rather than treated as an immutable source of truth.
+It must be regenerated whenever release files change rather than treated as immutable source truth.
