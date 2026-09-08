@@ -1,0 +1,60 @@
+name: Q1 practical strengthening 2026-09-08
+
+on:
+  push:
+    branches:
+      - 'q1/practical-strengthening-20260908'
+    paths:
+      - '.github/workflows/q1-practical-strengthening-20260908.yml'
+      - 'research/q1_2026/benchmarks/run_paper_a_carrier_coverage_curve.py'
+      - 'research/q1_2026/tests/test_paper_a_carrier_coverage_curve.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_pomcp_budget_curve.py'
+      - 'research/q1_2026/tests/test_paper_b_pomcp_budget_curve.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-practical-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: research/q1_2026
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: research/q1_2026/requirements.txt
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Run targeted tests
+        run: >-
+          python -m pytest -q
+          tests/test_paper_a_carrier_coverage_curve.py
+          tests/test_paper_b_pomcp_budget_curve.py
+          tests/test_core.py
+      - name: Run Paper A carrier-coverage analysis
+        run: python benchmarks/run_paper_a_carrier_coverage_curve.py
+      - name: Run Paper B POMCP compute-budget curve
+        run: python benchmarks/run_paper_b_pomcp_budget_curve.py
+      - name: Print compact evidence
+        run: |
+          echo '--- PAPER A ---'
+          cat results/paper_a_carrier_coverage_curve.json
+          echo '--- PAPER B ---'
+          cat results/paper_b_pomcp_budget_curve.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: q1-practical-strengthening-20260908
+          path: |
+            research/q1_2026/results/paper_a_carrier_coverage_curve.json
+            research/q1_2026/results/paper_a_carrier_coverage_curve.csv
+            research/q1_2026/results/paper_b_pomcp_budget_curve.json
+          if-no-files-found: error
