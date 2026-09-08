@@ -7,62 +7,62 @@ DOVOD is a research framework for procedural decision support under incomplete a
 1. **Which observed dependencies are actually supported as prerequisites for an action?**
 2. **What information should be acquired next when the current evidence is insufficient for a decision?**
 
-The repository contains the software and reproducibility artifact only. Manuscripts, conference submissions, expert documents and editorial files are intentionally kept outside the codebase.
+The stable repository surface contains software, frozen reference results, and reproducibility material. The active Q1 research branch `q1/full-rebuild-20260905` additionally contains two separate manuscript drafts and reviewer-facing evidence under `research/q1_2026/`. Editorial/submission documents are still kept outside the codebase.
 
 ## Why DOVOD
 
-Demonstration-driven systems often blur two very different statements:
+Demonstration-driven systems often blur two different statements:
 
 - “this step usually happened earlier”; and
 - “this step is required before the next action can be allowed”.
 
-DOVOD treats the first statement as evidence and the second as a hypothesis that must survive counterexamples. The same principle is used at decision time: low confidence is not treated as one generic problem. The system distinguishes uncertainty about the physical state from uncertainty about the procedure model and chooses which source of information to query.
+DOVOD treats the first statement as evidence and the second as a hypothesis that must survive counterexamples. At decision time, low confidence is also not treated as one generic problem: the system distinguishes uncertainty about the physical state, uncertainty about the procedure/model, and uncertainty about information-source quality or cost.
 
 ```mermaid
 flowchart LR
     D[Procedure demonstrations] --> H[Candidate dependencies]
     H --> C[Counterexample audit]
-    C --> G[Calibrated procedure model]
-    G --> A[Action admissibility]
+    C --> G[Calibrated authorization model]
+    G --> A[Action decision]
 
-    S[Physical-state belief] --> U[Decision uncertainty]
+    S[Physical-state belief] --> U[Residual uncertainty]
     G --> U
     U --> Q{What should be checked?}
     Q -->|state uncertainty| P[Physical observation]
     Q -->|procedure uncertainty| R[Semantic / rule review]
+    Q -->|source uncertainty| K[Calibration / another source]
     P --> A
     R --> A
+    K --> A
 ```
 
-## Research line 1 — dependency validation
+## Q1 2026 two-paper research package
 
-A frequently observed order is treated as a **candidate relation**, not as proof of necessity. If an action succeeds while a supposed prerequisite is absent, the observation is a direct counterexample and the relation is removed from the admissibility model.
+The frozen `main` baseline remains unchanged. The expanded reproducible research package is under [`research/q1_2026/`](research/q1_2026/README.md).
 
-The experiment family includes:
+### Paper A
 
-- counterexample-based relation pruning;
-- independent-recording calibration;
-- evidence-carrier robustness;
-- sample-complexity analysis;
-- semantic version spaces;
-- prospective review prioritization.
+**From Sequence Regularity to Action Authorization: Decision-Equivalent and Certified Repair of Learned Preconditions**
 
-## Research line 2 — information-source selection
+Paper A is a downstream, learner-agnostic repair layer for **applicability/authorization decisions**. It combines positive-only non-identifiability, exact hitting-set diagnostics, contextual prerequisite exceptions/guards, exact and weighted-soft finite-vocabulary MILPs, independent certification, a frozen 160-cell AMLGym confirmatory protocol, and post-confirmatory reviewer diagnostics. The frozen primary AMLGym result is `7 wins / 68 ties / 0 losses` across 75 usable cells and `4 / 6 / 0` at the domain-mean level (`p=0.125`); it is interpreted as selective deployment evidence, not broad superiority.
 
-Uncertainty can come from the physical state or from the procedure model itself. DOVOD models these sources separately and compares alternative interventions by expected information value, reliability and cost.
+V5 adds two explicitly post-confirmatory blocks without changing that primary claim: full-matrix random/frequency one-edit baselines and an independent Assembly101 held-out ordering audit. On Assembly101, 5 of 18 predecessor relations mined at frequency threshold 0.90 are contradicted by held-out labeled-correct behavior, reinforcing the claim boundary that frequent order is not mechanical necessity.
 
-The experiment family includes:
+Draft: [`research/q1_2026/papers/PAPER_A_DRAFT.md`](research/q1_2026/papers/PAPER_A_DRAFT.md).
 
-- exact Bellman planning;
-- strong one-step / myopic baselines;
-- noisy-source Bayesian stress tests;
-- reliability sweeps;
-- cost misspecification;
-- exact state-space scaling.
+### Paper B
 
-## Reference results
+**Exact Evidence-Count Dynamic Programming and Cost-Robust Information Acquisition for Static Procedural Decisions**
 
-The frozen experiment package is regression-checked against the following headline values:
+Paper B studies a restricted static binary-evidence acquisition class. Its algorithmic contribution is an exact evidence-count Bellman representation, cross-checked against ordered-history and posterior-vector references. POMCP approximation is validated on 12 independent 512-world cases; MECCANO supplies a positive but concentrated non-myopic regime, IMPACT PSR supplies a retained negative lookahead regime, a controlled cost grid supplies first-action minimax-regret evidence, and Blue Birds is used only for the narrower held-out source-calibration claim.
+
+Draft: [`research/q1_2026/papers/PAPER_B_DRAFT.md`](research/q1_2026/papers/PAPER_B_DRAFT.md).
+
+The papers are scientifically separate. The joint story is architectural only: Paper A repairs learned authorization restrictions; Paper B decides which evidence to acquire when residual uncertainty remains.
+
+## Frozen reference results
+
+The stable experiment package is regression-checked against the following headline values:
 
 | Question | Reference result |
 |---|---:|
@@ -76,27 +76,24 @@ The frozen experiment package is regression-checked against the following headli
 | Myopic → exact expected cost at semantic cost = 1 | 1.7380 → 1.6657 |
 | First-source change under asymmetric reliability | 33.15% |
 
-These are benchmark-specific methodological results. They do **not** certify mechanical truth, industrial safety, measured human benefit or live XR performance.
+These are benchmark-specific methodological results. They do **not** certify mechanical truth, industrial safety, measured human benefit, or live XR performance.
 
 ## Repository layout
 
 ```text
 DOVOD/
 ├── src/procedural_ai/              # stable reusable API
-├── experiments/
-│   ├── constraints/                # dependency-validation experiments
-│   └── information_selection/      # source-selection experiments
-├── research/reference_impl/        # preserved research implementations
+├── experiments/                    # frozen/stable experiment families
+├── research/reference_impl/        # preserved reference implementations
+├── research/q1_2026/               # two-paper Q1 research package and drafts
 ├── prototypes/runtime/             # procedure/runtime/XR branch
-├── results/                        # compact frozen outputs
+├── results/                        # compact frozen stable outputs
 ├── configs/                        # experiment parameters
 ├── data/                           # local third-party data boundary
 ├── tests/                          # unit and snapshot tests
 ├── docs/                           # scope, provenance and roadmap
 └── scripts/                        # verification and reproduction entry points
 ```
-
-The stable API is intentionally small. Research-only implementations are isolated under `research/reference_impl/` so that exploratory work does not leak into the maintained import surface.
 
 ## Install
 
@@ -111,16 +108,29 @@ python -m pip install -U pip
 pip install -e ".[dev]"
 ```
 
-## Verify the repository
+## Verify the stable repository surface
 
 No third-party dataset is required for the unit tests and frozen-result audit:
 
 ```bash
 pytest -q
 python scripts/verify_reference_results.py
+python scripts/check_public_repo.py
 ```
 
-## Full core rerun
+## Reproduce the Q1 two-paper core
+
+On the Q1 branch:
+
+```bash
+cd research/q1_2026
+python -m pip install -r requirements.txt
+make release
+```
+
+External AMLGym/Assembly101 studies are separately orchestrated because they depend on pinned third-party repositories and heavier runtimes. Blue Birds external calibration is also separated from the local core.
+
+## Full stable-core rerun with raw procedural data
 
 Raw MECCANO/IMPACT material is not redistributed by this repository. Obtain the datasets under their original terms. For MECCANO, place the PSR archive at:
 
@@ -174,14 +184,15 @@ print(planner.solve([0.5, 0.5, 0.0]))
 
 ## Project boundaries
 
-The central prerequisite analysis concerns **unary, unconditional, same-state relations**. Absence of a counterexample means **unfalsified in the observed evidence**, not mechanically proven. The source-selection experiments optimize a declared finite probabilistic model; live sensor and expert behavior require separate calibration.
+The stable prerequisite analysis concerns unary, unconditional, same-state relations. The Q1 Paper A expansion is still an applicability-decision layer, not causal mechanical discovery. Absence of a counterexample means **unfalsified in observed evidence**, not mechanically proven. Paper B optimizes declared finite probabilistic models; live sensor/expert behavior and real query costs require separate calibration. Blue Birds is source-calibration evidence, not procedural Bellman-policy validation. Post-confirmatory Paper A baselines and Assembly101 audits are not used to retrofit the frozen AMLGym significance result.
 
 Read:
 
 - [`docs/claim_boundary.md`](docs/claim_boundary.md)
 - [`docs/datasets.md`](docs/datasets.md)
 - [`docs/reproducibility.md`](docs/reproducibility.md)
-- [`docs/research_roadmap.md`](docs/research_roadmap.md)
+- [`research/q1_2026/REPRODUCIBILITY.md`](research/q1_2026/REPRODUCIBILITY.md)
+- [`research/q1_2026/RECOVERY_STATUS.md`](research/q1_2026/RECOVERY_STATUS.md)
 
 ## Related work from the team
 
