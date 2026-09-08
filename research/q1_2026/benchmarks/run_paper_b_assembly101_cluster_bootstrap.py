@@ -18,7 +18,10 @@ from pathlib import Path
 
 import numpy as np
 
-import run_paper_b_assembly101_acquisition as base
+try:
+    from benchmarks import run_paper_b_assembly101_acquisition as base
+except ModuleNotFoundError:  # direct script execution from benchmarks/
+    import run_paper_b_assembly101_acquisition as base
 
 DEFAULT_DRAWS = 10_000
 DEFAULT_SEED = 20260908
