@@ -1,4 +1,4 @@
-name: Q1 export Paper A source
+name: Q1 finalize Paper A V5
 
 on:
   push:
@@ -9,15 +9,209 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 jobs:
-  export:
+  finalize:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/upload-artifact@v4
         with:
-          name: paper-a-source-${{ github.sha }}
-          path: research/q1_2026/papers/PAPER_A_DRAFT.md
-          if-no-files-found: error
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download frozen V5 receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/dovod-v5/simple /tmp/dovod-v5/assembly
+          gh run download 34137791383 -n simple-baselines-merged -D /tmp/dovod-v5/simple
+          gh run download 34139277922 -n paper-a-assembly101-v5-seq328-ev3964-ce37-cv8-oe5-ov2-ref5 -D /tmp/dovod-v5/assembly || \
+            gh run download 34139277922 -D /tmp/dovod-v5/assembly
+      - name: Materialize V5 manuscript and tracked evidence
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+
+          root = Path('research/q1_2026')
+          paper = root / 'papers' / 'PAPER_A_DRAFT.md'
+          s = paper.read_text()
+
+          old_abstract = s.split('\n')[3]
+          new_abstract = """Action models learned from procedural demonstrations can inherit ordering regularities that are predictive of observed behavior without being justified as hard authorization conditions. Treating every recurrent predecessor as mandatory can false-block valid actions, whereas global deletion of suspicious preconditions can create false allows. We study a downstream, learner-agnostic repair problem: which learned restrictions should remain in the authorization surface, where should local exceptions be admitted, and where are additional local guards needed? Positive procedural traces alone do not identify mechanical necessity. For a finite candidate prerequisite family, minimum empirical decision-equivalent prerequisite selection reduces to Minimum Hitting Set and is NP-hard. We introduce a finite vocabulary of contextual prerequisite exceptions and guards and optimize exact or weighted-soft mixed-integer objectives over authorization decisions. The repair changes applicability decisions only; learned effects remain untouched. In a controlled eight-bit benchmark, the exact solver recovers three planted local edits, obtains zero complete-support risk versus 0.125 for both the upstream rule and the best global-deletion baseline, and makes 0 errors on an independent 4,096-decision holdout, giving a one-sided exact 95% risk bound of 7.31e-4. With 5% label corruption and 640 observations, mean complete-support risk is 0.00156 and maximum risk is 0.00781. A frozen AMLGym 1.0.11 confirmatory protocol over 20 IPC-style domains, four learner families, and two trace budgets retains all 160 prespecified cells: 75 contain usable held-out decisions, with 7 improvements, 68 ties, and 0 degradations relative to upstream applicability; the prespecified domain comparison is 4 wins, 6 ties, and 0 losses (two-sided sign-test p=0.125), so we do not claim broad learner-wide superiority. A post-confirmatory engineering drill-down on the four domains with positive frozen domain means then exposes the mechanism without altering the confirmatory claim: across 32 cells, 216 operator decision surfaces shrink to 13 counterexample-flagged surfaces, 7 calibration-approved non-empty local repairs, and 6 unresolved/abstained surfaces; over 4,448 held-out decisions, errors fall from 90 upstream to 20 under DOVOD, while a deliberately coarse 80%-threshold global override improves 0/32 cells. Real procedural traces independently reduce a 272-relation audit queue to 71 unresolved hypotheses in MECCANO and 13 in IMPACT. On the independent Assembly101 mistake annotations (328 sequences, 3,964 events), 5 of 18 train relations whose predecessor frequency is at least 0.90 are contradicted by held-out labeled-correct behavior; among covered held-out events, relation violations occur in 8/37 correct events and 2/5 explicit ordering mistakes. Thus recurrent order is neither mechanical necessity nor, by itself, a reliable mistake detector. The result is an auditable selective-repair workflow, not a claim of causal prerequisite discovery or autonomous safety authorization."""
+          if not old_abstract.startswith('Action models learned'):
+              raise RuntimeError('abstract anchor mismatch')
+          s = s.replace(old_abstract, new_abstract, 1)
+
+          old = '7. a reproducible practical audit layer that quantifies how many candidate restrictions are falsified, how many operator surfaces actually need local intervention, how many are repaired versus explicitly abstained, and whether a coarse global threshold heuristic can reproduce the observed improvements.'
+          new = '7. a reproducible practical audit layer that quantifies falsified versus unresolved restrictions, operator surfaces repaired versus explicitly abstained, post-confirmatory simple-baseline behavior, and held-out violations of high-frequency order relations on Assembly101.'
+          if old not in s:
+              raise RuntimeError('contribution anchor missing')
+          s = s.replace(old, new, 1)
+
+          anchor = """One concrete floortile/NOLAM case shows the intended mechanism. Upstream blocks `(change_color robot1 black black)` in a held-out state where the reference model allows it. DOVOD deploys an exception plus a guard on frozen local contexts and returns ALLOW only in the supported context. In that cell, the original five false blocks disappear with no new held-out error. The example is a decision-level local repair, not a claim that the learned action model has recovered the physical mechanism.\n\n## 10. Procedural falsification and audit-queue reduction"""
+          insert = """One concrete floortile/NOLAM case shows the intended mechanism. Upstream blocks `(change_color robot1 black black)` in a held-out state where the reference model allows it. DOVOD deploys an exception plus a guard on frozen local contexts and returns ALLOW only in the supported context. In that cell, the original five false blocks disappear with no new held-out error. The example is a decision-level local repair, not a claim that the learned action model has recovered the physical mechanism.\n\n### 9.6 Post-confirmatory simple-baseline panel\nAfter the primary AMLGym analysis and seeded reproducibility diagnostic were frozen, we added two intentionally weak at-most-one-edit comparators. The random comparator chooses a single candidate edit under a fixed seed; the frequency comparator chooses the single edit most supported by repair observations. Both use exactly the same repair/calibration/test partition and the same conservative calibration gate as DOVOD. They are post-confirmatory diagnostics and cannot retroactively strengthen the prespecified significance claim.\n\nThe comparator workflow is structurally complete over all 160 cells. It reproduces the same five upstream failure/timeout cells and 80 empty held-out cells, leaving 75 usable cells. On this seeded post-freeze panel, DOVOD improves over upstream in 6 cells, ties 69, and worsens 0. The gated random one-edit baseline improves 2, ties 73, and worsens 0; the gated frequency one-edit baseline has the same 2/73/0 pattern. Directly comparing held-out risks, DOVOD beats each simple baseline in 6 cells, ties 69, and loses 0. At the domain-mean level, DOVOD has 3 wins, 7 ties, and 0 losses against each simple baseline (exact two-sided sign-test p=0.25).\n\nThis panel answers a narrower reviewer question than the frozen global-override comparator: the observed local-repair gains are not reproduced merely by selecting one candidate edit at random or by taking the single most frequent repair-side edit. Because the baselines were introduced after seeing the primary study, these numbers are descriptive rather than confirmatory.\n\n## 10. Procedural falsification and held-out ordering audits\n### 10.1 MECCANO/IMPACT audit-queue reduction"""
+          if anchor not in s:
+              raise RuntimeError('section 9.5 anchor missing')
+          s = s.replace(anchor, insert, 1)
+
+          anchor = """A two-carrier threshold is a natural conservative heuristic, but it is not automatically better for the downstream decision objective: under the frozen MECCANO leave-one-recording-out stress, next-action recall falls from 0.9013 under the one-carrier rule to 0.7884. By contrast, nested held-recording calibration over 110 pairs raises recall from 0.8707348 to 0.8852784, gain 0.0145437 with bootstrap interval [0.0106327, 0.0191601], while pruning on average 3.85 candidate restrictions per pair. The practical lesson is to separate counterexample-based falsification from calibration of the decision layer.\n\n## 11. Related work"""
+          insert = """A two-carrier threshold is a natural conservative heuristic, but it is not automatically better for the downstream decision objective: under the frozen MECCANO leave-one-recording-out stress, next-action recall falls from 0.9013 under the one-carrier rule to 0.7884. By contrast, nested held-recording calibration over 110 pairs raises recall from 0.8707348 to 0.8852784, gain 0.0145437 with bootstrap interval [0.0106327, 0.0191601], while pruning on average 3.85 candidate restrictions per pair. The practical lesson is to separate counterexample-based falsification from calibration of the decision layer.\n\n### 10.2 Assembly101 held-out ordering audit\nMECCANO and IMPACT provide successful procedural traces but do not label explicit ordering mistakes. We therefore add an independent audit using the official Assembly101 mistake-detection annotations pinned to commit `6f3a953267ffb86cdeabf6751af05a75a011a4f8`. The pinned checkout contains the 328 sequences reported by the dataset README and 3,964 annotated events: 2,927 correct, 330 correction, and 707 mistake events. We use only temporal order and the provided labels; no video features are required.\n\nThe primary split is by sequence: 257 train sequences and 71 held-out sequences. For each target action we mine predecessor relations on training data and retain relations whose empirical predecessor frequency exceeds a fixed threshold. At the primary threshold 0.90, training yields 18 candidate relations. Five of the 18 are directly contradicted by held-out labeled-correct behavior. Among held-out events whose target action is covered by the mined relations, 8/37 correct events violate at least one candidate relation, while 2/5 explicit ordering-mistake events do so. The corresponding violation precision when contrasting only these two label types is 0.20. Thus a 90%-frequent predecessor relation is neither a safe hard precondition nor a standalone ordering-mistake detector.\n\nThe conclusion is not an artifact of one split granularity. Grouping by toy identity gives 87 train toy groups and 14 held-out toy groups (277/51 sequences). At threshold 0.90 it again produces 18 relations, 5 of which are refuted by held-out correct behavior; violations occur in 11/31 covered correct events and 3/5 covered ordering mistakes. Threshold sensitivity preserves the same qualitative result: on the sequence split, held-out correct behavior refutes 24/59 relations at 0.80 and 1/8 at 0.95; on the toy-group split it refutes 14/52 and 5/14 respectively. These are falsification diagnostics, not estimates of physical necessity.\n\n## 11. Related work"""
+          if anchor not in s:
+              raise RuntimeError('section 10 anchor missing')
+          s = s.replace(anchor, insert, 1)
+
+          old = 'Decision equivalence is distribution-relative and should not be interpreted as causal necessity. The finite edit vocabulary can omit useful repairs. AMLGym evaluation concerns applicability decisions only; effects and plan-solving performance are outside the external claim. Many frozen cells have empty held-out decision subsets, and five cells are failures/timeouts. The confirmatory sign test does not establish broad superiority, and the global gated baseline is not broadly beaten. The 32-cell engineering drill-down is intentionally post-confirmatory and selected from positive frozen domains, so its 90-to-20 error reduction is explanatory rather than a new unbiased effect-size estimate. The action-local scaling check ends at 1,024 states with a fixed 128-edit vocabulary and does not establish large-domain solver scalability. Audit-queue reductions count falsified/unresolved candidate relations and do not measure expert time or acceptance rate. The primary AMLGym run also predates explicit process-level RNG/hash pinning for upstream learner implementations; the seeded replay is therefore exposed as a post-freeze reproducibility diagnostic rather than used to replace the frozen primary result.'
+          new = 'Decision equivalence is distribution-relative and should not be interpreted as causal necessity. The finite edit vocabulary can omit useful repairs. AMLGym evaluation concerns applicability decisions only; effects and plan-solving performance are outside the external claim. Many frozen cells have empty held-out decision subsets, and five cells are failures/timeouts. The confirmatory sign test does not establish broad superiority, and the global gated baseline is not broadly beaten. The 32-cell engineering drill-down and the random/frequency one-edit baselines are intentionally post-confirmatory, so their effect sizes are explanatory rather than new unbiased estimates. The action-local scaling check ends at 1,024 states with a fixed 128-edit vocabulary and does not establish large-domain solver scalability. Audit-queue reductions count falsified/unresolved candidate relations and do not measure expert time or acceptance rate. The Assembly101 audit uses symbolic temporal relations over annotated action events and therefore tests the danger of treating recurrent order as a hard rule; it does not validate the full DOVOD repair layer on video or identify physical causality. The primary AMLGym run also predates explicit process-level RNG/hash pinning for upstream learner implementations; the seeded replay is therefore exposed as a post-freeze reproducibility diagnostic rather than used to replace the frozen primary result.'
+          if old not in s:
+              raise RuntimeError('limitations anchor missing')
+          s = s.replace(old, new, 1)
+
+          old = 'The repository contains the exact/soft contextual MILPs, hitting-set routines, identifiability diagnostics, certificates, controlled benchmark, stress suite, action-local scaling check, AMLGym bridge, frozen v4 contract, label-free preflight, per-cell runner, outcome-independent merger, seeded replay diagnostics, post-confirmatory practical drill-down, and real procedural audit receipts. On the frozen V4 evidence head `08366db201ddcd1f68adcd138ca8f21376ed505a`, the clean CI release passes 46 automated tests. Reviewer-hardened practical results are preserved in machine-readable JSON receipts, including `paper_a_amlgym_practical_summary_v4.json` and `paper_a_real_audit.json`. Heavy ROSAME/n=10 cases remain independently orchestrated under the frozen scientific case limit.'
+          new = 'The repository contains the exact/soft contextual MILPs, hitting-set routines, identifiability diagnostics, certificates, controlled benchmark, stress suite, action-local scaling check, AMLGym bridge, frozen v4 contract, label-free preflight, per-cell runner, outcome-independent merger, seeded replay diagnostics, post-confirmatory practical drill-down, simple-baseline panel, Assembly101 audit, and real procedural audit receipts. On the frozen V4 evidence head `08366db201ddcd1f68adcd138ca8f21376ed505a`, the clean CI release passes 46 automated tests; later V5 additions are versioned separately and do not modify the frozen primary result. Reviewer-hardened evidence is preserved in machine-readable JSON receipts, including `paper_a_amlgym_practical_summary_v4.json`, `paper_a_real_audit.json`, `paper_a_amlgym_simple_baselines_v5.json`, and `paper_a_assembly101_ordering_audit_v5.json`. Heavy ROSAME/n=10 cases remain independently orchestrated under the frozen scientific case limit.'
+          if old not in s:
+              raise RuntimeError('repro anchor missing')
+          s = s.replace(old, new, 1)
+
+          old = 'Sequence regularity is not authorization necessity. A downstream repair layer can preserve an upstream model while making explicit, local, independently testable changes to its authorization surface. Controlled experiments establish exact recovery, compactness, and certification properties. Real procedural traces show that counterexamples can remove a large fraction of universal prerequisite hypotheses before expert adjudication, while leaving unresolved candidates explicitly unresolved. The frozen AMLGym study supports only a conservative selective-deployment claim, not broad superiority. The post-confirmatory drill-down then shows what that selectivity means operationally: out of 216 operator surfaces only 13 are counterexample-flagged, seven receive non-empty local repairs, six abstain, and a coarse global threshold heuristic fails to reproduce the observed targeted improvements. The practical contribution is therefore a reproducible transition from a mass hypothesis list to a smaller auditable residue and context-local decision repairs where evidence supports them; it is neither causal prerequisite discovery nor autonomous safety authorization.'
+          new = 'Sequence regularity is not authorization necessity. A downstream repair layer can preserve an upstream model while making explicit, local, independently testable changes to its authorization surface. Controlled experiments establish exact recovery, compactness, and certification properties. Real procedural traces show that counterexamples can remove a large fraction of universal prerequisite hypotheses before expert adjudication, while leaving unresolved candidates explicitly unresolved. Assembly101 adds a complementary held-out warning: even relations observed before a target action at least 90% of the time in training are contradicted by labeled-correct test behavior, and their violations are not selective enough to serve as a mistake detector by themselves. The frozen AMLGym study supports only a conservative selective-deployment claim, not broad superiority. Post-confirmatory diagnostics show what that selectivity means operationally: out of 216 operator surfaces only 13 are counterexample-flagged, seven receive non-empty local repairs, six abstain, while coarse global, random-one-edit, and frequency-one-edit heuristics fail to reproduce the same pattern of gains. The practical contribution is therefore a reproducible transition from a mass hypothesis list to a smaller auditable residue and context-local decision repairs where evidence supports them; it is neither causal prerequisite discovery nor autonomous safety authorization.'
+          if old not in s:
+              raise RuntimeError('conclusion anchor missing')
+          s = s.replace(old, new, 1)
+
+          old = '9. McNemar, Q. Note on the Sampling Error of the Difference between Correlated Proportions or Percentages. Psychometrika, 1947.'
+          new = old + '\n10. Sener, F. et al. Assembly101: A Large-Scale Multi-View Video Dataset for Understanding Procedural Activities. CVPR, 2022.\n11. Ding, G. et al. Every Mistake Counts in Assembly. arXiv:2307.16453, 2023.'
+          if old not in s:
+              raise RuntimeError('reference anchor missing')
+          s = s.replace(old, new, 1)
+          paper.write_text(s)
+
+          simple_src = Path('/tmp/dovod-v5/simple/paper_a_amlgym_simple_baselines_v5.json')
+          if not simple_src.exists():
+              candidates = list(Path('/tmp/dovod-v5/simple').rglob('paper_a_amlgym_simple_baselines_v5.json'))
+              if len(candidates) != 1:
+                  raise RuntimeError(f'cannot locate simple-baseline artifact: {candidates}')
+              simple_src = candidates[0]
+          simple = json.loads(simple_src.read_text())
+          compact = {
+              'schema': 'dovod-paper-a-simple-baselines-v5-receipt-v1',
+              'status': 'post_confirmatory_descriptive',
+              'provenance': {
+                  'workflow_run_id': 34137791383,
+                  'workflow_head_sha': '10acbd00e52d8c1d2052d3a3966d43a70e3bd54d',
+                  'artifact_id': 10025537361,
+                  'artifact_digest': 'sha256:1b74043f7be4914cd36582f2cbf0253f8c494acf650bbd1145e0d6c1832f3b62',
+                  'full_json_sha256': hashlib.sha256(simple_src.read_bytes()).hexdigest(),
+              },
+              'claim_boundary': simple['claim_boundary'],
+              'matrix': {
+                  'expected_cases': simple['expected_cases'],
+                  'observed_unique_cases': simple['observed_unique_cases'],
+                  'usable_cases': simple['usable_cases'],
+                  'empty_test_cases': len(simple['empty_test_cases']),
+                  'failed_or_timed_out_cases': simple['failed_or_timed_out_cases'],
+                  'missing_cases': simple['missing_cases'],
+                  'unexpected_cases': simple['unexpected_cases'],
+                  'protocol_violations': simple['protocol_violations'],
+              },
+              'vs_upstream': simple['vs_upstream'],
+              'dovod_vs_random': simple['dovod_vs_random'],
+              'dovod_vs_frequency': simple['dovod_vs_frequency'],
+              'domain_pairwise': simple['domain_pairwise'],
+          }
+          (root / 'results' / 'paper_a_amlgym_simple_baselines_v5.json').write_text(json.dumps(compact, indent=2, sort_keys=True) + '\n')
+
+          assembly_candidates = list(Path('/tmp/dovod-v5/assembly').rglob('paper_a_assembly101_ordering_audit_v5.json'))
+          if len(assembly_candidates) != 1:
+              raise RuntimeError(f'cannot locate Assembly101 artifact: {assembly_candidates}')
+          assembly_src = assembly_candidates[0]
+          assembly = json.loads(assembly_src.read_text())
+          assembly_receipt = {
+              'schema': 'dovod-paper-a-assembly101-v5-receipt-v1',
+              'provenance': {
+                  'workflow_run_id': 34139277922,
+                  'workflow_head_sha': 'dcff9be0e0bea1aa328a046fc6c50716642c0485',
+                  'artifact_id': 10025229855,
+                  'artifact_digest': 'sha256:48e5d51f9f4b1fde1c4946241437f3f9cd5f46604e2c2001ccb8308e7289cead',
+                  'full_json_sha256': hashlib.sha256(assembly_src.read_bytes()).hexdigest(),
+              },
+              'claim_boundary': assembly['claim_boundary'],
+              'dataset': assembly['dataset'],
+              'sequence_count': assembly['sequence_count'],
+              'event_count': assembly['event_count'],
+              'label_counts': assembly['label_counts'],
+              'primary_threshold': assembly['primary_threshold'],
+              'primary_sequence_split': assembly['primary_sequence_split'],
+              'robustness_toy_group_split': assembly['robustness_toy_group_split'],
+          }
+          (root / 'results' / 'paper_a_assembly101_ordering_audit_v5.json').write_text(json.dumps(assembly_receipt, indent=2, sort_keys=True) + '\n')
+
+          evidence = """# Paper A V5 evidence amendment
+
+This amendment adds two reviewer-facing evidence blocks **after** the frozen V4 confirmatory analysis. Neither block changes the frozen AMLGym primary result (`7/68/0` usable-cell win/tie/loss versus upstream; domain `4/6/0`, exact two-sided sign-test `p=0.125`).
+
+## 1. Full-matrix simple baselines (post-confirmatory)
+
+Workflow run: `34137791383`, head `10acbd00e52d8c1d2052d3a3966d43a70e3bd54d`.
+
+The matrix covers all 160 AMLGym cells structurally and retains the same five upstream failure/timeout cells and 80 empty held-out cells, leaving 75 usable cells. The baselines are intentionally weak, at-most-one-edit heuristics using the same repair/calibration/test split and conservative calibration gate as DOVOD.
+
+- DOVOD vs upstream on this seeded post-freeze panel: `6 wins / 69 ties / 0 losses`, mean risk reduction `0.00718254`.
+- Random one-edit gated baseline vs upstream: `2 / 73 / 0`, mean risk reduction `0.00398148`.
+- Frequency one-edit gated baseline vs upstream: `2 / 73 / 0`, mean risk reduction `0.00203704`.
+- Direct DOVOD vs random: `6 wins / 69 ties / 0 losses`; mean random-minus-DOVOD risk `0.00320106`.
+- Direct DOVOD vs frequency: `6 / 69 / 0`; mean frequency-minus-DOVOD risk `0.00514550`.
+- Domain means: DOVOD has `3 wins / 7 ties / 0 losses` against each simple baseline; exact two-sided sign-test `p=0.25`.
+
+Interpretation: these post-confirmatory baselines answer only whether the observed local-repair gains can be reproduced by a trivial one-edit choice. They are descriptive and cannot be used to retrofit significance into the frozen primary study.
+
+Tracked receipt: `results/paper_a_amlgym_simple_baselines_v5.json`.
+
+## 2. Assembly101 held-out ordering audit
+
+Dataset: `assembly-101/assembly101-mistake-detection`, pinned commit `6f3a953267ffb86cdeabf6751af05a75a011a4f8`, CC BY-NC 4.0. The executable audit sees the 328 CSV annotation files reported by the dataset README and 3,964 annotated events (`2,927 correct`, `330 correction`, `707 mistake`). Workflow evidence head: `dcff9be0e0bea1aa328a046fc6c50716642c0485`.
+
+Primary split (sequence-level): `257` train sequences / `71` held-out sequences.
+
+At predecessor-frequency threshold `0.90`:
+
+- 18 candidate relations are learned from training sequences;
+- 5/18 are directly refuted by held-out labeled-correct behavior;
+- 8/37 covered held-out correct events violate at least one relation;
+- 2/5 covered explicit ordering mistakes violate a relation;
+- violation precision when contrasting only correct vs explicit-ordering-mistake events is `0.20`.
+
+Toy-id robustness split: `87` train toy groups / `14` held-out toy groups (`277/51` sequences). At threshold `0.90`, 18 relations are again learned, 5/18 are refuted by held-out correct behavior, and violations occur in `11/31` covered correct events and `3/5` covered ordering mistakes.
+
+Threshold sensitivity preserves the qualitative conclusion. Sequence split correct-behavior refutations are `24/59` at `0.80`, `5/18` at `0.90`, and `1/8` at `0.95`; toy-group split refutations are `14/52`, `5/18`, and `5/14` respectively.
+
+Interpretation: high-frequency temporal order is not mechanical prerequisite evidence, and relation violation alone is not a reliable mistake detector. This is a falsification/claim-boundary audit, not external validation of the full DOVOD repair policy.
+
+Tracked receipt: `results/paper_a_assembly101_ordering_audit_v5.json`.
+"""
+          (root / 'docs' / 'PAPER_A_V5_EVIDENCE.md').write_text(evidence)
+          PY
+      - name: Validate V5 evidence
+        run: |
+          python -m json.tool research/q1_2026/results/paper_a_amlgym_simple_baselines_v5.json >/dev/null
+          python -m json.tool research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json >/dev/null
+          grep -q '### 9.6 Post-confirmatory simple-baseline panel' research/q1_2026/papers/PAPER_A_DRAFT.md
+          grep -q '### 10.2 Assembly101 held-out ordering audit' research/q1_2026/papers/PAPER_A_DRAFT.md
+          grep -q '5 of 18 train relations' research/q1_2026/papers/PAPER_A_DRAFT.md
+          git diff --check
+      - name: Commit tracked V5 evidence and remove temporary exporter
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/q1-export-paper-a.yml
+          git add research/q1_2026/papers/PAPER_A_DRAFT.md \
+                  research/q1_2026/docs/PAPER_A_V5_EVIDENCE.md \
+                  research/q1_2026/results/paper_a_amlgym_simple_baselines_v5.json \
+                  research/q1_2026/results/paper_a_assembly101_ordering_audit_v5.json
+          git diff --cached --check
+          git commit -m 'Finalize Paper A V5 evidence'
+          git push origin HEAD:q1/full-rebuild-20260905
