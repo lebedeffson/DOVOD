@@ -11,8 +11,10 @@ on:
       - 'research/q1_2026/benchmarks/run_paper_a_multiaction16.py'
       - 'research/q1_2026/benchmarks/run_paper_b_noise_h10.py'
       - 'research/q1_2026/benchmarks/run_paper_b_assembly101_acquisition.py'
+      - 'research/q1_2026/benchmarks/run_paper_b_assembly101_cluster_bootstrap.py'
       - 'research/q1_2026/tests/test_paper_a_multiaction16.py'
       - 'research/q1_2026/tests/test_paper_b_assembly101_adapter.py'
+      - 'research/q1_2026/tests/test_paper_b_assembly101_cluster_bootstrap.py'
 
 permissions:
   contents: read
@@ -20,7 +22,7 @@ permissions:
 jobs:
   q1-final-practical:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     defaults:
       run:
         working-directory: research/q1_2026
@@ -36,11 +38,12 @@ jobs:
       - run: python -m pip install --upgrade pip gdown
       - run: python -m pip install -r requirements.txt
 
-      - name: Run focused leakage and controlled-scaling tests
+      - name: Run focused leakage, cluster-bootstrap, and controlled-scaling tests
         run: >-
           python -m pytest -q
           tests/test_paper_a_multiaction16.py
           tests/test_paper_b_assembly101_adapter.py
+          tests/test_paper_b_assembly101_cluster_bootstrap.py
 
       - name: Run 16-bit overlapping-action repair benchmark
         run: python benchmarks/run_paper_a_multiaction16.py
@@ -71,6 +74,14 @@ jobs:
           --min-train-count 5
           --output results/paper_b_assembly101_acquisition_v2.json
 
+      - name: Run whole-video cluster bootstrap
+        run: >-
+          python benchmarks/run_paper_b_assembly101_cluster_bootstrap.py
+          --annotations-dir "$ASSEMBLY101_ANNOTATIONS_DIR"
+          --min-train-count 5
+          --draws 10000
+          --output results/paper_b_assembly101_video_cluster.json
+
       - name: Print compact final evidence
         run: |
           python - <<'PY'
@@ -80,6 +91,7 @@ jobs:
           a = json.loads(Path('results/paper_a_multiaction16.json').read_text())
           n = json.loads(Path('results/paper_b_noise_h10.json').read_text())
           b = json.loads(Path('results/paper_b_assembly101_acquisition_v2.json').read_text())
+          c = json.loads(Path('results/paper_b_assembly101_video_cluster.json').read_text())
           print(json.dumps({
               'paper_a_multiaction16': a['summary'],
               'paper_b_noise': n['noisy_observation_sweep']['summary'],
@@ -92,6 +104,10 @@ jobs:
                   'coverage': b['coverage'],
                   'comparison': b['comparison'],
                   'sensitivity': b['sensitivity'],
+                  'video_cluster': {
+                      'coverage': c['coverage'],
+                      'cluster_analysis': c['cluster_analysis'],
+                  },
               },
           }, indent=2, sort_keys=True))
           PY
@@ -103,4 +119,5 @@ jobs:
             research/q1_2026/results/paper_a_multiaction16.json
             research/q1_2026/results/paper_b_noise_h10.json
             research/q1_2026/results/paper_b_assembly101_acquisition_v2.json
+            research/q1_2026/results/paper_b_assembly101_video_cluster.json
           if-no-files-found: error
