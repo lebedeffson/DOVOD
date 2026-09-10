@@ -70,15 +70,11 @@ Thus a stronger penalty on false permissions can suppress them, but the cost is 
 
 ## Reproduction
 
-Run:
+Browsable summary outputs are stored under `results/manuscript_extension/`. The complete controlled artifact with scripts, detailed CSVs and JSON reports is stored at `artifacts/manuscript_extension_20260910.tar.gz`.
 
-```bash
-python experiments/manuscript_extension/wcis_count_boundary.py
-python experiments/manuscript_extension/summa_identifiability.py
-python experiments/manuscript_extension/summa_error_tradeoff.py
-```
+Archive SHA-256: `5d11b69451411a35b230f7bf3e8aa99ed324476db7071ea2ecf938d0082fe028`.
 
-The scripts use deterministic seeds and write compact reports under `results/manuscript_extension/`.
+The exploratory POMCP-budget experiment is deliberately excluded because it was unstable and is not used in the manuscripts.
 
 ## Claim boundary
 
